@@ -71,10 +71,10 @@ describe('ApiService', () => {
     it('should create FormData and upload file', async () => {
       const mockFile = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
       const ticketId = 123;
-      
+
       // The method exists and can be called
       const result = await ApiService.uploadAttachment(ticketId, mockFile);
-      
+
       // Since axios is mocked, this will return null (error case)
       expect(result).toBeNull();
     });
@@ -84,7 +84,7 @@ describe('ApiService', () => {
     it('should return correct download URL', () => {
       const attachmentId = 456;
       const url = ApiService.getAttachmentDownloadUrl(attachmentId);
-      
+
       expect(url).toContain(`/attachments/${attachmentId}/download`);
       expect(typeof url).toBe('string');
     });

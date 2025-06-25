@@ -60,7 +60,7 @@ describe('TicketDetailModal Integration', () => {
     expect(mockTicket.createdBy.firstName).toBe('John');
     expect(mockTicket.createdBy.lastName).toBe('Creator');
     expect(mockTicket.createdBy.email).toBe('creator@test.com');
-    
+
     expect(mockTicket.assignedTo?.firstName).toBe('Jane');
     expect(mockTicket.assignedTo?.lastName).toBe('Engineer');
     expect(mockTicket.assignedTo?.email).toBe('assignee@test.com');
@@ -87,9 +87,9 @@ describe('TicketDetailModal Integration', () => {
   it('should handle different ticket statuses', () => {
     const statusMap = {
       [TicketStatus.New]: 'New',
-      [TicketStatus.InProgress]: 'In Progress', 
+      [TicketStatus.InProgress]: 'In Progress',
       [TicketStatus.Resolved]: 'Resolved',
-      [TicketStatus.Closed]: 'Closed'
+      [TicketStatus.Closed]: 'Closed',
     };
 
     const getStatusText = (status: TicketStatus): string => {
@@ -107,7 +107,7 @@ describe('TicketDetailModal Integration', () => {
       [TicketPriority.Low]: 'Low',
       [TicketPriority.Medium]: 'Medium',
       [TicketPriority.High]: 'High',
-      [TicketPriority.Critical]: 'Critical'
+      [TicketPriority.Critical]: 'Critical',
     };
 
     const getPriorityText = (priority: TicketPriority): string => {
@@ -124,7 +124,7 @@ describe('TicketDetailModal Integration', () => {
     const categoryMap = {
       [TicketCategory.Incident]: 'Incident',
       [TicketCategory.Request]: 'Request',
-      [TicketCategory.Change]: 'Change'
+      [TicketCategory.Change]: 'Change',
     };
 
     const getCategoryText = (category: TicketCategory): string => {
@@ -146,7 +146,7 @@ describe('TicketDetailModal Integration', () => {
 
   it('should handle attachment count', () => {
     expect(mockTicket.attachmentCount).toBe(2);
-    
+
     const noAttachmentsTicket = { ...mockTicket, attachmentCount: 0 };
     expect(noAttachmentsTicket.attachmentCount).toBe(0);
   });
@@ -156,7 +156,11 @@ describe('TicketDetailModal Integration', () => {
       return `${firstName} ${lastName}`;
     };
 
-    expect(getFullName(mockTicket.createdBy.firstName, mockTicket.createdBy.lastName)).toBe('John Creator');
-    expect(getFullName(mockTicket.assignedTo!.firstName, mockTicket.assignedTo!.lastName)).toBe('Jane Engineer');
+    expect(getFullName(mockTicket.createdBy.firstName, mockTicket.createdBy.lastName)).toBe(
+      'John Creator',
+    );
+    expect(getFullName(mockTicket.assignedTo!.firstName, mockTicket.assignedTo!.lastName)).toBe(
+      'Jane Engineer',
+    );
   });
 });

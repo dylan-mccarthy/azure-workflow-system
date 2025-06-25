@@ -21,7 +21,7 @@ public class BlobStorageService : IBlobStorageService
         try
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            
+
             // Ensure container exists
             await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
 
@@ -44,9 +44,9 @@ public class BlobStorageService : IBlobStorageService
             };
 
             await blobClient.UploadAsync(fileStream, uploadOptions);
-            
+
             _logger.LogInformation("Successfully uploaded file {FileName} as blob {BlobName}", fileName, blobName);
-            
+
             return blobClient.Uri.ToString();
         }
         catch (Exception ex)
@@ -62,7 +62,7 @@ public class BlobStorageService : IBlobStorageService
         {
             var blobClient = new BlobClient(new Uri(blobUrl));
             await blobClient.DeleteIfExistsAsync();
-            
+
             _logger.LogInformation("Successfully deleted blob {BlobUrl}", blobUrl);
         }
         catch (Exception ex)
@@ -78,9 +78,9 @@ public class BlobStorageService : IBlobStorageService
         {
             var blobClient = new BlobClient(new Uri(blobUrl));
             var response = await blobClient.DownloadStreamingAsync();
-            
+
             _logger.LogInformation("Successfully downloaded blob {BlobUrl}", blobUrl);
-            
+
             return response.Value.Content;
         }
         catch (Exception ex)

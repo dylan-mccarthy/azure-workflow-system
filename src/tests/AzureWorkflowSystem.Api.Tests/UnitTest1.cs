@@ -84,7 +84,7 @@ public class DatabaseBasicTests
         var savedTicket = await context.Tickets
             .Include(t => t.CreatedBy)
             .FirstOrDefaultAsync(t => t.Title == "Test Ticket");
-        
+
         Assert.NotNull(savedTicket);
         Assert.Equal("Test Ticket", savedTicket.Title);
         Assert.Equal(TicketPriority.Medium, savedTicket.Priority);

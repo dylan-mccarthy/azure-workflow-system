@@ -130,7 +130,7 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
 
     const file = files[0];
     const validationError = validateFile(file);
-    
+
     if (validationError) {
       setError(validationError);
       return;
@@ -156,7 +156,7 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   const handleDelete = async (attachmentId: number) => {
     const success = await ApiService.deleteAttachment(attachmentId);
     if (success) {
-      onAttachmentsChange(attachments.filter(a => a.id !== attachmentId));
+      onAttachmentsChange(attachments.filter((a) => a.id !== attachmentId));
     } else {
       setError('Failed to delete attachment. Please try again.');
     }
@@ -190,7 +190,7 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   return (
     <div className={styles.container}>
       <Text weight="semibold">Attachments</Text>
-      
+
       {error && (
         <MessageBar intent="error">
           <MessageBarBody>
@@ -240,7 +240,8 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                 <div className={styles.attachmentDetails}>
                   <Text weight="semibold">{attachment.fileName}</Text>
                   <Text size={200} style={{ color: tokens.colorNeutralForeground2 }}>
-                    {formatFileSize(attachment.fileSizeBytes)} • Uploaded by {attachment.uploadedBy.firstName} {attachment.uploadedBy.lastName}
+                    {formatFileSize(attachment.fileSizeBytes)} • Uploaded by{' '}
+                    {attachment.uploadedBy.firstName} {attachment.uploadedBy.lastName}
                   </Text>
                 </div>
               </div>
@@ -258,11 +259,7 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                     </Button>
                   }
                 />
-                <Button
-                  appearance="subtle"
-                  size="small"
-                  onClick={() => handleDownload(attachment)}
-                >
+                <Button appearance="subtle" size="small" onClick={() => handleDownload(attachment)}>
                   Download
                 </Button>
                 <Button

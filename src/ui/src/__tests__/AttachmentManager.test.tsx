@@ -45,7 +45,7 @@ describe('AttachmentManager Integration', () => {
 
   it('should handle file size validation correctly', () => {
     const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
-    
+
     // Test file size validation logic
     const validateFile = (file: File): string | null => {
       if (file.size > MAX_FILE_SIZE) {
@@ -59,7 +59,9 @@ describe('AttachmentManager Integration', () => {
     expect(validateFile(validFile)).toBeNull();
 
     // Test oversized file
-    const oversizedFile = new File([new ArrayBuffer(101 * 1024 * 1024)], 'oversized.pdf', { type: 'application/pdf' });
+    const oversizedFile = new File([new ArrayBuffer(101 * 1024 * 1024)], 'oversized.pdf', {
+      type: 'application/pdf',
+    });
     const error = validateFile(oversizedFile);
     expect(error).toContain('File size exceeds 100 MB limit');
     expect(error).toContain('101.0 MB');
@@ -70,7 +72,7 @@ describe('AttachmentManager Integration', () => {
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
       if (bytes === 0) return '0 Bytes';
       const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return Math.round(bytes / Math.pow(1024, i) * 10) / 10 + ' ' + sizes[i];
+      return Math.round((bytes / Math.pow(1024, i)) * 10) / 10 + ' ' + sizes[i];
     };
 
     expect(formatFileSize(1024)).toBe('1 KB');
@@ -99,7 +101,7 @@ describe('AttachmentManager Integration', () => {
 
   it('should handle attachment data correctly', () => {
     const attachment = mockAttachments[0];
-    
+
     expect(attachment.fileName).toBe('test-document.pdf');
     expect(attachment.contentType).toBe('application/pdf');
     expect(attachment.fileSizeBytes).toBe(1024);

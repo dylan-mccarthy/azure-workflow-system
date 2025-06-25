@@ -19,7 +19,7 @@ public class AttachmentsController : ControllerBase
 
     public AttachmentsController(WorkflowDbContext context, ILogger<AttachmentsController> logger, IBlobStorageService blobStorageService)
     {
-        _context = context;  
+        _context = context;
         _logger = logger;
         _blobStorageService = blobStorageService;
     }
@@ -121,7 +121,7 @@ public class AttachmentsController : ControllerBase
         try
         {
             var fileStream = await _blobStorageService.DownloadFileAsync(attachment.BlobUrl);
-            
+
             return File(fileStream, attachment.ContentType, attachment.FileName);
         }
         catch (Exception ex)
@@ -242,7 +242,7 @@ public class AttachmentsController : ControllerBase
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<AttachmentDto>> CreateAttachment(
-        [FromQuery] int ticketId, 
+        [FromQuery] int ticketId,
         CreateAttachmentDto createAttachmentDto)
     {
         // Verify ticket exists

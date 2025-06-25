@@ -153,7 +153,7 @@ export class ApiService {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
+        },
       );
       return response.data;
     } catch (error) {

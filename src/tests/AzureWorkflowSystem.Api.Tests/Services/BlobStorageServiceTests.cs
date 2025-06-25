@@ -119,7 +119,7 @@ public class BlobStorageServiceTests
     {
         // Arrange
         var blobUrl = "invalid-url";
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<UriFormatException>(
             () => _blobStorageService.DeleteFileAsync(blobUrl));
@@ -130,7 +130,7 @@ public class BlobStorageServiceTests
     {
         // Arrange
         var blobUrl = "invalid-url";
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<UriFormatException>(
             () => _blobStorageService.DownloadFileAsync(blobUrl));

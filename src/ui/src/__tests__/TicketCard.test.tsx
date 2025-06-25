@@ -89,10 +89,10 @@ describe('TicketCard Integration', () => {
       TicketPriority.Low,
       TicketPriority.Medium,
       TicketPriority.High,
-      TicketPriority.Critical
+      TicketPriority.Critical,
     ];
 
-    priorities.forEach(priority => {
+    priorities.forEach((priority) => {
       const ticketWithPriority = { ...mockTicket, priority };
       expect(ticketWithPriority.priority).toBe(priority);
     });
@@ -109,10 +109,10 @@ describe('TicketCard Integration', () => {
       TicketStatus.New,
       TicketStatus.InProgress,
       TicketStatus.Resolved,
-      TicketStatus.Closed
+      TicketStatus.Closed,
     ];
 
-    statusOptions.forEach(status => {
+    statusOptions.forEach((status) => {
       const ticketWithStatus = { ...mockTicket, status };
       expect(ticketWithStatus.status).toBe(status);
     });
@@ -122,10 +122,10 @@ describe('TicketCard Integration', () => {
     const categoryOptions = [
       TicketCategory.Incident,
       TicketCategory.Request,
-      TicketCategory.Change
+      TicketCategory.Change,
     ];
 
-    categoryOptions.forEach(category => {
+    categoryOptions.forEach((category) => {
       const ticketWithCategory = { ...mockTicket, category };
       expect(ticketWithCategory.category).toBe(category);
     });
@@ -136,8 +136,12 @@ describe('TicketCard Integration', () => {
       return `${firstName} ${lastName}`;
     };
 
-    expect(getFullName(mockTicket.createdBy.firstName, mockTicket.createdBy.lastName)).toBe('John Creator');
-    expect(getFullName(mockTicket.assignedTo!.firstName, mockTicket.assignedTo!.lastName)).toBe('Jane Engineer');
+    expect(getFullName(mockTicket.createdBy.firstName, mockTicket.createdBy.lastName)).toBe(
+      'John Creator',
+    );
+    expect(getFullName(mockTicket.assignedTo!.firstName, mockTicket.assignedTo!.lastName)).toBe(
+      'Jane Engineer',
+    );
   });
 
   it('handles ticket ID formatting', () => {

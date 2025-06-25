@@ -97,9 +97,10 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
   const isImage = attachment.contentType.startsWith('image/');
   const isVideo = attachment.contentType.startsWith('video/');
   const isAudio = attachment.contentType.startsWith('audio/');
-  const isText = attachment.contentType.startsWith('text/') || 
-                 attachment.contentType === 'application/json' ||
-                 attachment.contentType === 'application/xml';
+  const isText =
+    attachment.contentType.startsWith('text/') ||
+    attachment.contentType === 'application/json' ||
+    attachment.contentType === 'application/xml';
   const isPdf = attachment.contentType === 'application/pdf';
 
   const getFileIcon = () => {
@@ -122,22 +123,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
 
   const renderPreview = () => {
     if (isImage) {
-      return (
-        <img
-          src={downloadUrl}
-          alt={attachment.fileName}
-          className={styles.previewImage}
-        />
-      );
+      return <img src={downloadUrl} alt={attachment.fileName} className={styles.previewImage} />;
     }
 
     if (isVideo) {
       return (
-        <video
-          src={downloadUrl}
-          controls
-          className={styles.previewVideo}
-        >
+        <video src={downloadUrl} controls className={styles.previewVideo}>
           Your browser does not support the video tag.
         </video>
       );
@@ -145,11 +136,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
 
     if (isAudio) {
       return (
-        <audio
-          src={downloadUrl}
-          controls
-          className={styles.previewAudio}
-        >
+        <audio src={downloadUrl} controls className={styles.previewAudio}>
           Your browser does not support the audio tag.
         </audio>
       );
@@ -165,7 +152,8 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
       );
     }
 
-    if (isText && attachment.fileSizeBytes < 1024 * 1024) { // Only preview text files under 1MB
+    if (isText && attachment.fileSizeBytes < 1024 * 1024) {
+      // Only preview text files under 1MB
       return (
         <div className={styles.previewText}>
           <iframe
@@ -181,10 +169,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
       <div className={styles.notSupported}>
         {getFileIcon()}
         <Text>Preview not available for this file type</Text>
-        <Button
-          appearance="primary"
-          onClick={() => window.open(downloadUrl, '_blank')}
-        >
+        <Button appearance="primary" onClick={() => window.open(downloadUrl, '_blank')}>
           Download to view
         </Button>
       </div>
@@ -199,7 +184,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
           <DialogTitle>
             <Text weight="semibold">{attachment.fileName}</Text>
           </DialogTitle>
-          
+
           <DialogContent>
             <div className={styles.fileInfo}>
               <Text size={200}>
@@ -210,16 +195,11 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
               </Text>
             </div>
 
-            <div className={styles.previewContainer}>
-              {renderPreview()}
-            </div>
+            <div className={styles.previewContainer}>{renderPreview()}</div>
           </DialogContent>
 
           <DialogActions>
-            <Button
-              appearance="secondary"
-              onClick={() => window.open(downloadUrl, '_blank')}
-            >
+            <Button appearance="secondary" onClick={() => window.open(downloadUrl, '_blank')}>
               Download
             </Button>
             <Button appearance="primary" onClick={() => setIsOpen(false)}>

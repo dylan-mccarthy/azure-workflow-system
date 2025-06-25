@@ -20,7 +20,7 @@ public class AttachmentsControllerTests
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        
+
         var context = new WorkflowDbContext(options);
         context.Database.EnsureCreated();
         return context;
@@ -133,7 +133,7 @@ public class AttachmentsControllerTests
 
     [Fact]
     public async Task GetTicketAttachments_WithNoAttachments_ReturnsEmptyList()
-    { 
+    {
         // Arrange
         using var context = GetDbContext();
         var user = await CreateTestUser(context);
@@ -347,7 +347,7 @@ public class AttachmentsControllerTests
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         var attachmentDto = Assert.IsType<AttachmentDto>(createdResult.Value);
-        
+
         Assert.True(attachmentDto.CreatedAt >= beforeCreate);
         Assert.True(attachmentDto.CreatedAt <= DateTime.UtcNow);
 
@@ -449,7 +449,7 @@ public class AttachmentsControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var attachments = Assert.IsAssignableFrom<List<AttachmentDto>>(okResult.Value);
         Assert.Equal(2, attachments.Count);
-        
+
         // Verify ordering (newest first)
         Assert.Equal("new-file.txt", attachments[0].FileName);
         Assert.Equal("old-file.txt", attachments[1].FileName);
@@ -505,7 +505,7 @@ public class AttachmentsControllerTests
 
         Assert.NotNull(attachment1Dto.UploadedBy);
         Assert.Equal("user1@test.com", attachment1Dto.UploadedBy.Email);
-        
+
         Assert.NotNull(attachment2Dto.UploadedBy);
         Assert.Equal("user2@test.com", attachment2Dto.UploadedBy.Email);
     }

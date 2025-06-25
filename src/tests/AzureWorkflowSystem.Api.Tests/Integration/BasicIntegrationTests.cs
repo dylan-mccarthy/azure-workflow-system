@@ -12,7 +12,7 @@ public class BasicIntegrationTests
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        
+
         var context = new WorkflowDbContext(options);
         context.Database.EnsureCreated();
         return context;
@@ -173,7 +173,7 @@ public class BasicIntegrationTests
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var statuses = new[] { TicketStatus.New, TicketStatus.Triaged, TicketStatus.Assigned, 
+        var statuses = new[] { TicketStatus.New, TicketStatus.Triaged, TicketStatus.Assigned,
                               TicketStatus.InProgress, TicketStatus.Resolved, TicketStatus.Closed };
 
         foreach (var status in statuses)
@@ -222,7 +222,7 @@ public class BasicIntegrationTests
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var priorities = new[] { TicketPriority.Low, TicketPriority.Medium, TicketPriority.High, 
+        var priorities = new[] { TicketPriority.Low, TicketPriority.Medium, TicketPriority.High,
                                 TicketPriority.Critical, TicketPriority.Emergency };
 
         foreach (var priority in priorities)
@@ -271,7 +271,7 @@ public class BasicIntegrationTests
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var categories = new[] { TicketCategory.Incident, TicketCategory.Access, TicketCategory.NewResource, 
+        var categories = new[] { TicketCategory.Incident, TicketCategory.Access, TicketCategory.NewResource,
                                 TicketCategory.Change, TicketCategory.Alert };
 
         foreach (var category in categories)

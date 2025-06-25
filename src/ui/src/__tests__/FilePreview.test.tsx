@@ -55,7 +55,7 @@ describe('FilePreview Integration', () => {
       const sizes = ['Bytes', 'KB', 'MB', 'GB'];
       if (bytes === 0) return '0 Bytes';
       const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return Math.round(bytes / Math.pow(1024, i) * 10) / 10 + ' ' + sizes[i];
+      return Math.round((bytes / Math.pow(1024, i)) * 10) / 10 + ' ' + sizes[i];
     };
 
     expect(formatFileSize(mockAttachment.fileSizeBytes)).toBe('1 KB');
@@ -94,10 +94,12 @@ describe('FilePreview Integration', () => {
 
   it('should validate preview capability for different file types', () => {
     const canPreview = (contentType: string): boolean => {
-      return contentType.startsWith('image/') || 
-             contentType.startsWith('video/') || 
-             contentType.startsWith('audio/') ||
-             contentType === 'application/pdf';
+      return (
+        contentType.startsWith('image/') ||
+        contentType.startsWith('video/') ||
+        contentType.startsWith('audio/') ||
+        contentType === 'application/pdf'
+      );
     };
 
     expect(canPreview('image/png')).toBe(true);

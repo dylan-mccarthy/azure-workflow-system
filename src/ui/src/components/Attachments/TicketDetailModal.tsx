@@ -17,11 +17,14 @@ import {
   Divider,
   Spinner,
 } from '@fluentui/react-components';
+import { PersonRegular, CalendarRegular } from '@fluentui/react-icons';
 import {
-  PersonRegular,
-  CalendarRegular,
-} from '@fluentui/react-icons';
-import { TicketDto, AttachmentDto, getStatusLabel, getPriorityLabel, getCategoryLabel } from '../../types/api';
+  TicketDto,
+  AttachmentDto,
+  getStatusLabel,
+  getPriorityLabel,
+  getCategoryLabel,
+} from '../../types/api';
 import ApiService from '../../services/api';
 import AttachmentManager from '../Attachments/AttachmentManager';
 
@@ -101,24 +104,37 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
 
   const getPriorityColor = (priority: number) => {
     switch (priority) {
-      case 1: return 'informative'; // Low
-      case 2: return 'subtle'; // Medium
-      case 3: return 'warning'; // High
-      case 4: return 'severe'; // Critical
-      case 5: return 'danger'; // Emergency
-      default: return 'subtle';
+      case 1:
+        return 'informative'; // Low
+      case 2:
+        return 'subtle'; // Medium
+      case 3:
+        return 'warning'; // High
+      case 4:
+        return 'severe'; // Critical
+      case 5:
+        return 'danger'; // Emergency
+      default:
+        return 'subtle';
     }
   };
 
   const getStatusColor = (status: number) => {
     switch (status) {
-      case 1: return 'informative'; // New
-      case 2: return 'warning'; // Triaged
-      case 3: return 'subtle'; // Assigned
-      case 4: return 'brand'; // In Progress
-      case 5: return 'success'; // Resolved
-      case 6: return 'subtle'; // Closed
-      default: return 'subtle';
+      case 1:
+        return 'informative'; // New
+      case 2:
+        return 'warning'; // Triaged
+      case 3:
+        return 'subtle'; // Assigned
+      case 4:
+        return 'brand'; // In Progress
+      case 5:
+        return 'success'; // Resolved
+      case 6:
+        return 'subtle'; // Closed
+      default:
+        return 'subtle';
     }
   };
 
@@ -130,7 +146,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
           <DialogTitle>
             <div className={styles.header}>
               <div className={styles.ticketInfo}>
-                <Title3>#{ticket.id} - {ticket.title}</Title3>
+                <Title3>
+                  #{ticket.id} - {ticket.title}
+                </Title3>
                 <div className={styles.badges}>
                   <Badge color={getStatusColor(ticket.status)} appearance="filled">
                     {getStatusLabel(ticket.status)}
@@ -138,14 +156,12 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
                   <Badge color={getPriorityColor(ticket.priority)} appearance="filled">
                     {getPriorityLabel(ticket.priority)}
                   </Badge>
-                  <Badge appearance="outline">
-                    {getCategoryLabel(ticket.category)}
-                  </Badge>
+                  <Badge appearance="outline">{getCategoryLabel(ticket.category)}</Badge>
                 </div>
               </div>
             </div>
           </DialogTitle>
-          
+
           <DialogContent className={styles.content}>
             <div className={styles.details}>
               <div>
@@ -156,7 +172,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
               <div className={styles.detailRow}>
                 <PersonRegular />
                 <Text>
-                  <strong>Created by:</strong> {ticket.createdBy.firstName} {ticket.createdBy.lastName} ({ticket.createdBy.email})
+                  <strong>Created by:</strong> {ticket.createdBy.firstName}{' '}
+                  {ticket.createdBy.lastName} ({ticket.createdBy.email})
                 </Text>
               </div>
 
@@ -164,7 +181,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
                 <div className={styles.detailRow}>
                   <PersonRegular />
                   <Text>
-                    <strong>Assigned to:</strong> {ticket.assignedTo.firstName} {ticket.assignedTo.lastName} ({ticket.assignedTo.email})
+                    <strong>Assigned to:</strong> {ticket.assignedTo.firstName}{' '}
+                    {ticket.assignedTo.lastName} ({ticket.assignedTo.email})
                   </Text>
                 </div>
               )}
