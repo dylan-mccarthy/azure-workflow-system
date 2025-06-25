@@ -5,3 +5,4 @@ dist
 *.min.css
 .bicep
 *.json
+docs
