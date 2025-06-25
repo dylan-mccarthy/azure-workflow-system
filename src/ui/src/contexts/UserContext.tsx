@@ -9,6 +9,8 @@ interface UserContextType {
   hasRole: (role: UserRole) => boolean;
   canAssignTickets: () => boolean;
   canViewAllTickets: () => boolean;
+  canViewReports: () => boolean;
+  canExportData: () => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -66,6 +68,20 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     return currentUser?.role !== UserRole.Viewer;
   };
 
+  const canViewReports = (): boolean => {
+    // Managers and Admins can view reports, Engineers can view basic reports
+    return (
+      currentUser?.role === UserRole.Manager ||
+      currentUser?.role === UserRole.Admin ||
+      currentUser?.role === UserRole.Engineer
+    );
+  };
+
+  const canExportData = (): boolean => {
+    // Only Managers and Admins can export data for audit purposes
+    return currentUser?.role === UserRole.Manager || currentUser?.role === UserRole.Admin;
+  };
+
   const value: UserContextType = {
     currentUser,
     isLoading,
@@ -73,6 +89,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     hasRole,
     canAssignTickets,
     canViewAllTickets,
+    canViewReports,
+    canExportData,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

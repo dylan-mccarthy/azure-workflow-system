@@ -164,3 +164,29 @@ export const getRoleLabel = (role: UserRole): string => {
       return 'Unknown';
   }
 };
+
+// Reporting Types
+export interface ReportMetricsDto {
+  mttaMinutes: number;
+  mttrMinutes: number;
+  slaCompliancePercentage: number;
+  totalTickets: number;
+  openTickets: number;
+  closedTickets: number;
+  fromDate: string;
+  toDate: string;
+}
+
+export interface TicketTrendDto {
+  date: string;
+  openTickets: number;
+  closedTickets: number;
+}
+
+export interface ReportFiltersDto {
+  fromDate?: string;
+  toDate?: string;
+  priority?: TicketPriority;
+  category?: TicketCategory;
+  status?: TicketStatus;
+}

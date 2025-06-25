@@ -8,6 +8,9 @@ import {
   TicketStatus,
   TicketPriority,
   TicketCategory,
+  ReportMetricsDto,
+  TicketTrendDto,
+  ReportFiltersDto,
 } from '../types/api';
 
 // API base URL - this would typically come from environment variables
@@ -174,6 +177,85 @@ export class ApiService {
 
   static getAttachmentDownloadUrl(attachmentId: number): string {
     return `${API_BASE_URL}/attachments/${attachmentId}/download`;
+    
+  // Reports
+  static async getReportMetrics(filters?: ReportFiltersDto): Promise<ReportMetricsDto | null> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.fromDate) params.append('fromDate', filters.fromDate);
+      if (filters?.toDate) params.append('toDate', filters.toDate);
+      if (filters?.priority) params.append('priority', filters.priority.toString());
+      if (filters?.category) params.append('category', filters.category.toString());
+
+      const response = await apiClient.get<ReportMetricsDto>(
+        `/reports/metrics?${params.toString()}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch report metrics:', error);
+      return null;
+    }
+  }
+
+  static async getReportTrends(
+    fromDate?: string,
+    toDate?: string,
+    groupBy: string = 'day',
+  ): Promise<TicketTrendDto[]> {
+    try {
+      const params = new URLSearchParams();
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
+      params.append('groupBy', groupBy);
+
+      const response = await apiClient.get<TicketTrendDto[]>(
+        `/reports/trends?${params.toString()}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch report trends:', error);
+      return [];
+    }
+  }
+
+  static async exportTickets(filters?: ReportFiltersDto): Promise<Blob | null> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.fromDate) params.append('fromDate', filters.fromDate);
+      if (filters?.toDate) params.append('toDate', filters.toDate);
+      if (filters?.priority) params.append('priority', filters.priority.toString());
+      if (filters?.category) params.append('category', filters.category.toString());
+      if (filters?.status) params.append('status', filters.status.toString());
+
+      const response = await apiClient.get(`/reports/export/tickets?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export tickets:', error);
+      return null;
+    }
+  }
+
+  static async exportAuditLogs(
+    fromDate?: string,
+    toDate?: string,
+    ticketId?: number,
+  ): Promise<Blob | null> {
+    try {
+      const params = new URLSearchParams();
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
+      if (ticketId) params.append('ticketId', ticketId.toString());
+
+      const response = await apiClient.get(`/reports/export/audit-logs?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export audit logs:', error);
+      return null;
+    }
   }
 }
 
