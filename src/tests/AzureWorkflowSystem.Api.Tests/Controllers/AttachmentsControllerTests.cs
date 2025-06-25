@@ -2,6 +2,7 @@ using AzureWorkflowSystem.Api.Controllers;
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,8 @@ public class AttachmentsControllerTests
     private static AttachmentsController GetController(WorkflowDbContext context)
     {
         var logger = new Mock<ILogger<AttachmentsController>>();
-        return new AttachmentsController(context, logger.Object);
+        var blobStorageService = new Mock<IBlobStorageService>();
+        return new AttachmentsController(context, logger.Object, blobStorageService.Object);
     }
 
     private static async Task<User> CreateTestUser(WorkflowDbContext context, string email = "test@test.com")
@@ -258,7 +260,7 @@ public class AttachmentsControllerTests
     }
 
     [Fact]
-    public async Task CreateAttachment_WithOversizedFile_ReturnsBadRequest()
+    public async Task CreateAttachment_WithOversizedFile_Returns413StatusCode()
     {
         // Arrange
         using var context = GetDbContext();
@@ -278,8 +280,9 @@ public class AttachmentsControllerTests
         var result = await controller.CreateAttachment(ticket.Id, createAttachmentDto);
 
         // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("File size exceeds 100 MB limit", badRequestResult.Value);
+        var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(413, statusCodeResult.StatusCode);
+        Assert.Equal("File size exceeds 100 MB limit", statusCodeResult.Value);
 
         // Verify no attachment was saved
         var attachmentCount = await context.Attachments.CountAsync();
@@ -503,5 +506,86 @@ public class AttachmentsControllerTests
         
         Assert.NotNull(attachment2Dto.UploadedBy);
         Assert.Equal("user2@test.com", attachment2Dto.UploadedBy.Email);
+    }
+
+    [Fact]
+    public async Task CreateAttachment_CreatesAuditLogEntry()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var controller = GetController(context);
+        var createAttachmentDto = new CreateAttachmentDto
+        {
+            FileName = "audit-test.pdf",
+            ContentType = "application/pdf",
+            FileSizeBytes = 2048,
+            BlobUrl = "https://storage.blob.core.windows.net/attachments/audit-test.pdf"
+        };
+
+        // Act
+        var result = await controller.CreateAttachment(ticket.Id, createAttachmentDto);
+
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        var attachmentDto = Assert.IsType<AttachmentDto>(createdResult.Value);
+
+        // Verify audit log entry was created
+        var auditLog = await context.AuditLogs
+            .Where(a => a.Action == "ATTACHMENT_CREATED" && a.TicketId == ticket.Id)
+            .FirstOrDefaultAsync();
+
+        Assert.NotNull(auditLog);
+        Assert.Equal("ATTACHMENT_CREATED", auditLog.Action);
+        Assert.Contains("audit-test.pdf", auditLog.Details);
+        Assert.Contains(ticket.Id.ToString(), auditLog.Details);
+        Assert.Contains("2048 bytes", auditLog.Details);
+        Assert.Equal(ticket.Id, auditLog.TicketId);
+        Assert.Equal(1, auditLog.UserId); // Admin user ID
+    }
+
+    [Fact]
+    public async Task DeleteAttachment_CreatesAuditLogEntry()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var attachment = new Attachment
+        {
+            FileName = "delete-audit.txt",
+            ContentType = "text/plain",
+            FileSizeBytes = 512,
+            BlobUrl = "https://storage.blob.core.windows.net/attachments/delete-audit.txt",
+            TicketId = ticket.Id,
+            UploadedById = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        context.Attachments.Add(attachment);
+        await context.SaveChangesAsync();
+
+        var controller = GetController(context);
+
+        // Act
+        var result = await controller.DeleteAttachment(attachment.Id);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+
+        // Verify audit log entry was created
+        var auditLog = await context.AuditLogs
+            .Where(a => a.Action == "ATTACHMENT_DELETED" && a.TicketId == ticket.Id)
+            .FirstOrDefaultAsync();
+
+        Assert.NotNull(auditLog);
+        Assert.Equal("ATTACHMENT_DELETED", auditLog.Action);
+        Assert.Contains("delete-audit.txt", auditLog.Details);
+        Assert.Contains(ticket.Id.ToString(), auditLog.Details);
+        Assert.Equal(ticket.Id, auditLog.TicketId);
+        Assert.Equal(1, auditLog.UserId); // Admin user ID
     }
 }
