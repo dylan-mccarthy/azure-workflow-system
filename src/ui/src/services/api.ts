@@ -35,15 +35,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error);
-    
+
     // Check if it's a network error (API not available)
     if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
       console.warn('API server is not available. Running in offline mode.');
       // You could implement offline fallback here
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export interface GetTicketsParams {

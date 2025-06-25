@@ -57,12 +57,12 @@ const KanbanPage: React.FC = () => {
 
         setTickets(ticketsData);
         setEngineers(engineersData);
-        
+
         // If both arrays are empty, API might not be available
         if (ticketsData.length === 0 && engineersData.length === 0) {
           setError(
             'No data available. This could mean the API server is not running or accessible. ' +
-            'Please ensure the backend API is running on https://localhost:7000'
+              'Please ensure the backend API is running on https://localhost:7000',
           );
         }
       } catch (err) {
@@ -85,7 +85,7 @@ const KanbanPage: React.FC = () => {
     if (newAssigneeId !== undefined) {
       // Assign the ticket
       const success = await ApiService.assignTicket(ticketId, { assignedToId: newAssigneeId });
-      
+
       if (success) {
         // Update local state - ticket assignment
         setTickets((prevTickets) =>
