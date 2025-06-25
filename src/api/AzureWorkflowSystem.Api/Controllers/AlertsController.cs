@@ -106,6 +106,7 @@ public class AlertsController : ControllerBase
     {
         return severity?.ToLowerInvariant() switch
         {
+            "emergency" => TicketPriority.Emergency,
             "sev0" or "critical" => TicketPriority.Critical,
             "sev1" or "error" => TicketPriority.High,
             "sev2" or "warning" => TicketPriority.Medium,
