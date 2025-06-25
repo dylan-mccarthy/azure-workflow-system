@@ -55,38 +55,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Azure CLI
-        uses: azure/CLI@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            echo "Azure CLI setup complete"
-            # Create a temporary Azure profile directory to avoid permission issues
-            mkdir -p ~/.azure
-            echo '{"installationId": "test", "subscriptions": []}' > ~/.azure/azureProfile.json
+      - name: Install Bicep CLI
+        run: |
+          # Install Bicep CLI directly
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          sudo mv ./bicep /usr/local/bin/bicep
+          bicep --version
 
       - name: Validate Bicep files
         run: |
           echo "Validating Bicep templates..."
-          az bicep build --file infra/main.bicep
-
-          # Note: What-if analysis requires actual resource groups and credentials
-          # This will be enabled once Azure credentials are configured
-          # echo "Running what-if analysis for dev environment..."
-          # az deployment group what-if \
-          #   --resource-group ${{ vars.AZURE_RESOURCE_GROUP_DEV }} \
-          #   --template-file infra/main.bicep \
-          #   --parameters @infra/parameters/dev.parameters.json
+          bicep build infra/main.bicep
 
       - name: Check Bicep linting
         run: |
           echo "Running Bicep linter..."
-          az bicep lint --file infra/main.bicep
+          bicep lint infra/main.bicep
 
           # Lint all module files
           for file in infra/modules/*.bicep; do
-            echo "Linting $file..."
-            az bicep lint --file "$file"
+            if [ -f "$file" ]; then
+              echo "Linting $file..."
+              bicep lint "$file"
+            fi
           done
 
   security-scan:
