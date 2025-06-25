@@ -38,9 +38,9 @@ public class AlertsController : ControllerBase
 
             if (existingTicket != null)
             {
-                _logger.LogInformation("Ticket already exists for alert {AlertId}: Ticket {TicketId}", 
+                _logger.LogInformation("Ticket already exists for alert {AlertId}: Ticket {TicketId}",
                     alertPayload.Data.Essentials.AlertId, existingTicket.Id);
-                
+
                 return Ok(new { ticketId = existingTicket.Id, message = "Ticket already exists for this alert" });
             }
 
@@ -84,20 +84,21 @@ public class AlertsController : ControllerBase
             _context.AuditLogs.Add(auditLog);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Created ticket {TicketId} from alert {AlertId}", 
+            _logger.LogInformation("Created ticket {TicketId} from alert {AlertId}",
                 ticket.Id, alertPayload.Data.Essentials.AlertId);
 
-            return Ok(new { 
-                ticketId = ticket.Id, 
+            return Ok(new
+            {
+                ticketId = ticket.Id,
                 message = "Ticket created successfully from alert",
                 alertId = alertPayload.Data.Essentials.AlertId
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing alert webhook: {AlertId}", 
+            _logger.LogError(ex, "Error processing alert webhook: {AlertId}",
                 alertPayload.Data?.Essentials?.AlertId ?? "Unknown");
-            
+
             return StatusCode(500, new { message = "Error processing alert" });
         }
     }
@@ -160,8 +161,8 @@ public class AlertsController : ControllerBase
     private async Task CalculateSlaTargetDate(Ticket ticket)
     {
         var slaConfig = await _context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (slaConfig != null)

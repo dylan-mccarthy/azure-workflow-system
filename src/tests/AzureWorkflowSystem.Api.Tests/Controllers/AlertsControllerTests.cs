@@ -21,7 +21,7 @@ public class AlertsControllerTests
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        
+
         var context = new WorkflowDbContext(options);
         context.Database.EnsureCreated();
         return context;
@@ -31,11 +31,11 @@ public class AlertsControllerTests
     {
         var logger = new Mock<ILogger<AlertsController>>();
         var controller = new AlertsController(context, logger.Object);
-        
+
         // Set up authenticated context for API key authorization
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers["X-API-Key"] = "development-webhook-api-key-for-testing-only";
-        
+
         // Mock successful authentication
         var claims = new List<Claim>
         {
@@ -46,12 +46,12 @@ public class AlertsControllerTests
         var identity = new ClaimsIdentity(claims, "ApiKey");
         var principal = new ClaimsPrincipal(identity);
         httpContext.User = principal;
-        
+
         controller.ControllerContext = new ControllerContext()
         {
             HttpContext = httpContext
         };
-        
+
         return controller;
     }
 
@@ -141,11 +141,11 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         // Check that the result contains the expected properties (anonymous type)
         var resultValue = okResult.Value;
         Assert.NotNull(resultValue);
-        
+
         // Verify ticket was created
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "test-alert-123");
         Assert.NotNull(ticket);
@@ -197,7 +197,7 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         // Verify no new ticket was created
         var ticketCount = await context.Tickets.CountAsync(t => t.AlertId == "duplicate-alert-123");
         Assert.Equal(1, ticketCount);
@@ -235,7 +235,7 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == $"test-alert-{severity ?? "null"}");
         Assert.NotNull(ticket);
         Assert.Equal(expectedPriority, ticket.Priority);
@@ -269,11 +269,11 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "sla-test-alert");
         Assert.NotNull(ticket);
         Assert.NotNull(ticket.SlaTargetDate);
-        
+
         // SLA target should be 30 minutes from the alert fired time
         var expectedSlaDate = alertPayload.Data.Essentials.FiredDateTime.ToUniversalTime().AddMinutes(30);
         Assert.True(Math.Abs((ticket.SlaTargetDate.Value - expectedSlaDate).TotalSeconds) < 60); // Allow 1 minute tolerance
@@ -294,7 +294,7 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "no-sla-alert");
         Assert.NotNull(ticket);
         Assert.Null(ticket.SlaTargetDate);
@@ -321,10 +321,10 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "test-alert-123");
         Assert.NotNull(ticket);
-        Assert.Equal("/subscriptions/test/resourceGroups/test-rg/providers/Microsoft.Compute/virtualMachines/vm1", 
+        Assert.Equal("/subscriptions/test/resourceGroups/test-rg/providers/Microsoft.Compute/virtualMachines/vm1",
                      ticket.AzureResourceId);
     }
 
@@ -343,10 +343,10 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "test-alert-123");
         Assert.NotNull(ticket);
-        
+
         var description = ticket.Description;
         Assert.Contains("Azure Monitor Alert Details:", description);
         Assert.Contains("Alert Rule: Test Alert Rule", description);
@@ -384,7 +384,7 @@ public class AlertsControllerTests
         // Assert
         var statusResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(500, statusResult.StatusCode);
-        
+
         // Verify no ticket was created
         var ticketCount = await context.Tickets.CountAsync();
         Assert.Equal(0, ticketCount);
@@ -400,7 +400,7 @@ public class AlertsControllerTests
         // Create controller without authentication context (simulates missing API key)
         var logger = new Mock<ILogger<AlertsController>>();
         var controller = new AlertsController(context, logger.Object);
-        
+
         // Create mock HttpContext without X-API-Key header
         var httpContext = new DefaultHttpContext();
         controller.ControllerContext = new ControllerContext()
@@ -417,7 +417,7 @@ public class AlertsControllerTests
         // We can verify the attribute is present
         var method = typeof(AlertsController).GetMethod(nameof(AlertsController.ProcessAlert));
         var authorizeAttribute = method?.GetCustomAttributes(typeof(AuthorizeAttribute), false).FirstOrDefault() as AuthorizeAttribute;
-        
+
         Assert.NotNull(authorizeAttribute);
         Assert.Equal("ApiKey", authorizeAttribute.AuthenticationSchemes);
     }
@@ -430,11 +430,11 @@ public class AlertsControllerTests
         var user = await CreateTestUser(context);
 
         var controller = GetController(context);
-        
+
         // Create mock HttpContext with valid API key
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers["X-API-Key"] = "development-webhook-api-key-for-testing-only";
-        
+
         // Mock successful authentication
         var claims = new List<Claim>
         {
@@ -445,7 +445,7 @@ public class AlertsControllerTests
         var identity = new ClaimsIdentity(claims, "ApiKey");
         var principal = new ClaimsPrincipal(identity);
         httpContext.User = principal;
-        
+
         controller.ControllerContext = new ControllerContext()
         {
             HttpContext = httpContext
@@ -458,7 +458,7 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         // Verify ticket was created
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "auth-test-alert");
         Assert.NotNull(ticket);
@@ -482,7 +482,7 @@ public class AlertsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        
+
         var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "test-alert-123");
         Assert.NotNull(ticket);
         Assert.Equal(alertTime, ticket.CreatedAt);

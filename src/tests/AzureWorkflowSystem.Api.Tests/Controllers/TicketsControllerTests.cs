@@ -17,7 +17,7 @@ public class TicketsControllerTests
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        
+
         var context = new WorkflowDbContext(options);
         context.Database.EnsureCreated();
         return context;
@@ -82,7 +82,7 @@ public class TicketsControllerTests
             UpdatedAt = DateTime.UtcNow
         };
 
-        var ticket2 = new Ticket  
+        var ticket2 = new Ticket
         {
             Title = "Ticket 2",
             Description = "Description 2",
@@ -129,7 +129,7 @@ public class TicketsControllerTests
             UpdatedAt = DateTime.UtcNow
         };
 
-        var assignedTicket = new Ticket  
+        var assignedTicket = new Ticket
         {
             Title = "Assigned Ticket",
             Description = "Description",
@@ -176,7 +176,7 @@ public class TicketsControllerTests
             UpdatedAt = DateTime.UtcNow
         };
 
-        var lowPriorityTicket = new Ticket  
+        var lowPriorityTicket = new Ticket
         {
             Title = "Low Priority Ticket",
             Description = "Description",
@@ -318,7 +318,7 @@ public class TicketsControllerTests
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
         var ticketDto = Assert.IsType<TicketDto>(createdResult.Value);
-        
+
         Assert.NotNull(ticketDto.SlaTargetDate);
         // SLA target should be 4 hours (240 minutes) from creation time - allow for small timing differences
         var expectedSlaDate = ticketDto.CreatedAt.AddMinutes(240);

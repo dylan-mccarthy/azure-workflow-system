@@ -12,18 +12,18 @@ public class TicketDto
     public TicketCategory Category { get; set; }
     public string? AzureResourceId { get; set; }
     public string? AlertId { get; set; }
-    
+
     public UserDto CreatedBy { get; set; } = null!;
     public UserDto? AssignedTo { get; set; }
-    
+
     public DateTime? SlaTargetDate { get; set; }
     public bool IsSlaBreach { get; set; }
-    
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
-    
+
     public int AttachmentCount { get; set; }
 }
 

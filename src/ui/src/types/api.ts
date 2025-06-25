@@ -78,6 +78,24 @@ export interface UpdateTicketDto {
   alertId?: string;
 }
 
+export interface AttachmentDto {
+  id: number;
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  blobUrl: string;
+  ticketId: number;
+  createdAt: string;
+  uploadedBy: UserDto;
+}
+
+export interface CreateAttachmentDto {
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  blobUrl: string;
+}
+
 // Helper functions for display
 export const getStatusLabel = (status: TicketStatus): string => {
   switch (status) {

@@ -128,13 +128,13 @@ public class UsersController : ControllerBase
 
         if (!string.IsNullOrEmpty(updateUserDto.FirstName))
             user.FirstName = updateUserDto.FirstName;
-        
+
         if (!string.IsNullOrEmpty(updateUserDto.LastName))
             user.LastName = updateUserDto.LastName;
-        
+
         if (updateUserDto.Role.HasValue)
             user.Role = updateUserDto.Role.Value;
-        
+
         if (updateUserDto.IsActive.HasValue)
             user.IsActive = updateUserDto.IsActive.Value;
 
@@ -172,7 +172,7 @@ public class UsersController : ControllerBase
         // Instead of deleting, mark as inactive
         user.IsActive = false;
         user.UpdatedAt = DateTime.UtcNow;
-        
+
         await _context.SaveChangesAsync();
 
         return NoContent();

@@ -9,12 +9,14 @@ import {
   Body2,
   Badge,
   mergeClasses,
+  Button,
 } from '@fluentui/react-components';
 import {
   AlertRegular,
   PersonRegular,
   CalendarRegular,
   ReOrderDotsVerticalRegular,
+  OpenRegular,
 } from '@fluentui/react-icons';
 import {
   TicketDto,
@@ -23,6 +25,7 @@ import {
   getPriorityLabel,
   getCategoryLabel,
 } from '../../types/api';
+import TicketDetailModal from '../Attachments/TicketDetailModal';
 
 const useStyles = makeStyles({
   card: {
@@ -48,6 +51,11 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     ...shorthands.margin('0', '0', '8px', '0'),
+  },
+  cardHeaderActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
   },
   ticketTitle: {
     fontSize: '14px',
@@ -190,7 +198,21 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
     >
       <div className={styles.cardHeader}>
         <Body2 className={styles.ticketId}>#{ticket.id}</Body2>
-        <ReOrderDotsVerticalRegular className={styles.dragHandle} />
+        <div className={styles.cardHeaderActions}>
+          <TicketDetailModal
+            ticket={ticket}
+            trigger={
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<OpenRegular />}
+                title="View details"
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
+          />
+          <ReOrderDotsVerticalRegular className={styles.dragHandle} />
+        </div>
       </div>
 
       <Title3 className={styles.ticketTitle}>{ticket.title}</Title3>

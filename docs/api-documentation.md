@@ -215,6 +215,17 @@ Get a specific attachment by ID.
 
 **Authorization Required**: Yes
 
+#### POST /api/attachments/upload?ticketId={ticketId}
+Upload a new file attachment to a ticket.
+
+**Authorization Required**: Yes  
+**Query Parameters**: `ticketId` (integer) - Ticket ID  
+**Request Body**: multipart/form-data with file
+
+**Note**: File size limit is 100 MB. Files exceeding this limit will return HTTP 413 status.
+
+**Response**: AttachmentDto object with file metadata
+
 #### POST /api/attachments?ticketId={ticketId}
 Upload a new attachment to a ticket.
 
@@ -231,6 +242,13 @@ Upload a new attachment to a ticket.
 ```
 
 **Note**: File size limit is 100 MB.
+
+#### GET /api/attachments/{id}/download
+Download a specific attachment file.
+
+**Authorization Required**: Yes
+
+**Response**: File download with appropriate content-type headers
 
 #### DELETE /api/attachments/{id}
 Delete an attachment.

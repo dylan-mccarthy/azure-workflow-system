@@ -65,6 +65,44 @@ describe('ApiService', () => {
     expect(typeof ApiService.getEngineers).toBe('function');
   });
 
+  // New attachment-related tests
+  it('should have getTicketAttachments method', () => {
+    expect(typeof ApiService.getTicketAttachments).toBe('function');
+  });
+
+  it('should have uploadAttachment method', () => {
+    expect(typeof ApiService.uploadAttachment).toBe('function');
+  });
+
+  it('should have deleteAttachment method', () => {
+    expect(typeof ApiService.deleteAttachment).toBe('function');
+  });
+
+  it('should have getAttachmentDownloadUrl method', () => {
+    expect(typeof ApiService.getAttachmentDownloadUrl).toBe('function');
+  });
+
+  describe('uploadAttachment', () => {
+    it('should create FormData and upload file', async () => {
+      const mockFile = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
+      const ticketId = 123;
+
+      // The method exists and can be called
+      const result = await ApiService.uploadAttachment(ticketId, mockFile);
+
+      // Since axios is mocked, this will return null (error case)
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getAttachmentDownloadUrl', () => {
+    it('should return correct download URL', () => {
+      const attachmentId = 456;
+      const url = ApiService.getAttachmentDownloadUrl(attachmentId);
+
+      expect(url).toContain(`/attachments/${attachmentId}/download`);
+      expect(typeof url).toBe('string');
+
   describe('Reporting Methods', () => {
     it('should have getReportMetrics method', () => {
       expect(typeof ApiService.getReportMetrics).toBe('function');

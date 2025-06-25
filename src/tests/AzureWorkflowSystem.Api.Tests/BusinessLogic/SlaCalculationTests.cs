@@ -12,7 +12,7 @@ public class SlaCalculationTests
         var options = new DbContextOptionsBuilder<WorkflowDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-        
+
         var context = new WorkflowDbContext(options);
         context.Database.EnsureCreated();
         return context;
@@ -23,7 +23,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         var slaConfig = new SlaConfiguration
         {
             Priority = TicketPriority.Emergency,
@@ -52,8 +52,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)
@@ -76,7 +76,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         // Create SLA config for different priority/category combination
         var slaConfig = new SlaConfiguration
         {
@@ -105,8 +105,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)
@@ -126,7 +126,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         var inactiveSlaConfig = new SlaConfiguration
         {
             Priority = TicketPriority.Emergency,
@@ -154,8 +154,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)
@@ -175,7 +175,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         var slaConfig = new SlaConfiguration
         {
             Priority = TicketPriority.Emergency,
@@ -205,8 +205,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)
@@ -234,7 +234,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         var slaConfig = new SlaConfiguration
         {
             Priority = priority,
@@ -263,8 +263,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)
@@ -285,7 +285,7 @@ public class SlaCalculationTests
     {
         // Arrange
         using var context = GetDbContext();
-        
+
         var slaConfig1 = new SlaConfiguration
         {
             Priority = TicketPriority.Emergency,
@@ -323,8 +323,8 @@ public class SlaCalculationTests
 
         // Act - Simulate SLA calculation logic (FirstOrDefaultAsync returns first match)
         var matchingSlaConfig = await context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (matchingSlaConfig != null)

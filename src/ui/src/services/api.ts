@@ -4,6 +4,7 @@ import {
   UserDto,
   AssignTicketDto,
   UpdateTicketDto,
+  AttachmentDto,
   TicketStatus,
   TicketPriority,
   TicketCategory,
@@ -132,6 +133,51 @@ export class ApiService {
     }
   }
 
+  // Attachments
+  static async getTicketAttachments(ticketId: number): Promise<AttachmentDto[]> {
+    try {
+      const response = await apiClient.get<AttachmentDto[]>(`/attachments?ticketId=${ticketId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch attachments for ticket ${ticketId}:`, error);
+      return [];
+    }
+  }
+
+  static async uploadAttachment(ticketId: number, file: File): Promise<AttachmentDto | null> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post<AttachmentDto>(
+        `/attachments/upload?ticketId=${ticketId}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to upload attachment for ticket ${ticketId}:`, error);
+      return null;
+    }
+  }
+
+  static async deleteAttachment(attachmentId: number): Promise<boolean> {
+    try {
+      await apiClient.delete(`/attachments/${attachmentId}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete attachment ${attachmentId}:`, error);
+      return false;
+    }
+  }
+
+  static getAttachmentDownloadUrl(attachmentId: number): string {
+    return `${API_BASE_URL}/attachments/${attachmentId}/download`;
+    
   // Reports
   static async getReportMetrics(filters?: ReportFiltersDto): Promise<ReportMetricsDto | null> {
     try {

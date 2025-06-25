@@ -1,6 +1,7 @@
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ public class AttachmentsController : ControllerBase
 {
     private readonly WorkflowDbContext _context;
     private readonly ILogger<AttachmentsController> _logger;
+    private readonly IBlobStorageService _blobStorageService;
 
-    public AttachmentsController(WorkflowDbContext context, ILogger<AttachmentsController> logger)
+    public AttachmentsController(WorkflowDbContext context, ILogger<AttachmentsController> logger, IBlobStorageService blobStorageService)
     {
-        _context = context;  
+        _context = context;
         _logger = logger;
+        _blobStorageService = blobStorageService;
     }
 
     /// <summary>
@@ -104,11 +107,142 @@ public class AttachmentsController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new attachment for a ticket
+    /// Download a specific attachment file
+    /// </summary>
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> DownloadAttachment(int id)
+    {
+        var attachment = await _context.Attachments.FindAsync(id);
+        if (attachment == null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            var fileStream = await _blobStorageService.DownloadFileAsync(attachment.BlobUrl);
+
+            return File(fileStream, attachment.ContentType, attachment.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to download attachment {AttachmentId}", id);
+            return StatusCode(500, "Failed to download file");
+        }
+    }
+
+    /// <summary>
+    /// Upload a file attachment to a ticket
+    /// </summary>
+    [HttpPost("upload")]
+    public async Task<ActionResult<AttachmentDto>> UploadAttachment(
+        [FromQuery] int ticketId,
+        IFormFile file)
+    {
+        // Verify ticket exists
+        if (!await _context.Tickets.AnyAsync(t => t.Id == ticketId))
+        {
+            return NotFound("Ticket not found");
+        }
+
+        // Validate file is provided
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file provided");
+        }
+
+        // Validate file size (100 MB limit)
+        const long maxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
+        if (file.Length > maxFileSizeBytes)
+        {
+            return StatusCode(413, "File size exceeds 100 MB limit");
+        }
+
+        // Validate MIME type is provided
+        if (string.IsNullOrEmpty(file.ContentType))
+        {
+            return BadRequest("File content type is required");
+        }
+
+        try
+        {
+            // Upload file to blob storage
+            using var stream = file.OpenReadStream();
+            var blobUrl = await _blobStorageService.UploadFileAsync(stream, file.FileName, file.ContentType);
+
+            // For now, use the admin user as the uploader
+            // In a real application, this would come from the authenticated user context
+            var uploadedBy = await _context.Users.FirstAsync(u => u.Id == 1);
+
+            var attachment = new Attachment
+            {
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                FileSizeBytes = file.Length,
+                BlobUrl = blobUrl,
+                TicketId = ticketId,
+                UploadedById = uploadedBy.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Attachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            // Log audit entry for attachment creation
+            var auditLog = new AuditLog
+            {
+                Action = "ATTACHMENT_UPLOADED",
+                Details = $"File '{file.FileName}' uploaded to ticket {ticketId} ({file.Length} bytes)",
+                TicketId = ticketId,
+                UserId = uploadedBy.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+
+            // Load the attachment with related data for response
+            var createdAttachment = await _context.Attachments
+                .Include(a => a.UploadedBy)
+                .FirstAsync(a => a.Id == attachment.Id);
+
+            var attachmentDto = new AttachmentDto
+            {
+                Id = createdAttachment.Id,
+                FileName = createdAttachment.FileName,
+                ContentType = createdAttachment.ContentType,
+                FileSizeBytes = createdAttachment.FileSizeBytes,
+                BlobUrl = createdAttachment.BlobUrl,
+                TicketId = createdAttachment.TicketId,
+                CreatedAt = createdAttachment.CreatedAt,
+                UploadedBy = new UserDto
+                {
+                    Id = createdAttachment.UploadedBy.Id,
+                    Email = createdAttachment.UploadedBy.Email,
+                    FirstName = createdAttachment.UploadedBy.FirstName,
+                    LastName = createdAttachment.UploadedBy.LastName,
+                    Role = createdAttachment.UploadedBy.Role,
+                    IsActive = createdAttachment.UploadedBy.IsActive,
+                    CreatedAt = createdAttachment.UploadedBy.CreatedAt,
+                    UpdatedAt = createdAttachment.UploadedBy.UpdatedAt
+                }
+            };
+
+            return CreatedAtAction(nameof(GetAttachment), new { id = attachment.Id }, attachmentDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to upload attachment {FileName} for ticket {TicketId}", file.FileName, ticketId);
+            return StatusCode(500, "Failed to upload file");
+        }
+    }
+
+    /// <summary>
+    /// Create a new attachment for a ticket (for existing blob storage files)
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<AttachmentDto>> CreateAttachment(
-        [FromQuery] int ticketId, 
+        [FromQuery] int ticketId,
         CreateAttachmentDto createAttachmentDto)
     {
         // Verify ticket exists
@@ -121,7 +255,7 @@ public class AttachmentsController : ControllerBase
         const long maxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
         if (createAttachmentDto.FileSizeBytes > maxFileSizeBytes)
         {
-            return BadRequest("File size exceeds 100 MB limit");
+            return StatusCode(413, "File size exceeds 100 MB limit");
         }
 
         // For now, use the admin user as the uploader
@@ -140,6 +274,19 @@ public class AttachmentsController : ControllerBase
         };
 
         _context.Attachments.Add(attachment);
+        await _context.SaveChangesAsync();
+
+        // Log audit entry for attachment creation
+        var auditLog = new AuditLog
+        {
+            Action = "ATTACHMENT_CREATED",
+            Details = $"Attachment '{createAttachmentDto.FileName}' uploaded to ticket {ticketId} ({createAttachmentDto.FileSizeBytes} bytes)",
+            TicketId = ticketId,
+            UserId = uploadedBy.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.AuditLogs.Add(auditLog);
         await _context.SaveChangesAsync();
 
         // Load the attachment with related data for response
@@ -184,7 +331,26 @@ public class AttachmentsController : ControllerBase
             return NotFound();
         }
 
+        // Store attachment info for audit log before deletion
+        var fileName = attachment.FileName;
+        var ticketId = attachment.TicketId;
+
         _context.Attachments.Remove(attachment);
+        await _context.SaveChangesAsync();
+
+        // Log audit entry for attachment deletion
+        // For now, use the admin user as the deleter (in real app, get from auth context)
+        var deletedBy = await _context.Users.FirstAsync(u => u.Id == 1);
+        var auditLog = new AuditLog
+        {
+            Action = "ATTACHMENT_DELETED",
+            Details = $"Attachment '{fileName}' deleted from ticket {ticketId}",
+            TicketId = ticketId,
+            UserId = deletedBy.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.AuditLogs.Add(auditLog);
         await _context.SaveChangesAsync();
 
         return NoContent();

@@ -1,5 +1,7 @@
 using AzureWorkflowSystem.Api.Authentication;
 using AzureWorkflowSystem.Api.Data;
+using AzureWorkflowSystem.Api.Services;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +17,20 @@ builder.Services.AddControllers();
 // Add Entity Framework
 builder.Services.AddDbContext<WorkflowDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add Azure Blob Storage
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("BlobStorage");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        // For development, use storage emulator or provide default
+        connectionString = "UseDevelopmentStorage=true";
+    }
+    return new BlobServiceClient(connectionString);
+});
+
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Add Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,7 +132,7 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<WorkflowDbContext>();
-    
+
     try
     {
         context.Database.Migrate();

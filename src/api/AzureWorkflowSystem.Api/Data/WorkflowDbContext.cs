@@ -38,13 +38,13 @@ public class WorkflowDbContext : DbContext
             entity.Property(e => e.Status).HasConversion<string>();
             entity.Property(e => e.Priority).HasConversion<string>();
             entity.Property(e => e.Category).HasConversion<string>();
-            
+
             // Relationships
             entity.HasOne(e => e.CreatedBy)
                   .WithMany(u => u.CreatedTickets)
                   .HasForeignKey(e => e.CreatedById)
                   .OnDelete(DeleteBehavior.Restrict);
-                  
+
             entity.HasOne(e => e.AssignedTo)
                   .WithMany(u => u.AssignedTickets)
                   .HasForeignKey(e => e.AssignedToId)
@@ -58,12 +58,12 @@ public class WorkflowDbContext : DbContext
             entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
             entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
             entity.Property(e => e.BlobUrl).IsRequired();
-            
+
             entity.HasOne(e => e.Ticket)
                   .WithMany(t => t.Attachments)
                   .HasForeignKey(e => e.TicketId)
                   .OnDelete(DeleteBehavior.Cascade);
-                  
+
             entity.HasOne(e => e.UploadedBy)
                   .WithMany()
                   .HasForeignKey(e => e.UploadedById)
@@ -75,12 +75,12 @@ public class WorkflowDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
-            
+
             entity.HasOne(e => e.Ticket)
                   .WithMany(t => t.AuditLogs)
                   .HasForeignKey(e => e.TicketId)
                   .OnDelete(DeleteBehavior.Cascade);
-                  
+
             entity.HasOne(e => e.User)
                   .WithMany(u => u.AuditLogs)
                   .HasForeignKey(e => e.UserId)
@@ -93,7 +93,7 @@ public class WorkflowDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Priority).HasConversion<string>();
             entity.Property(e => e.Category).HasConversion<string>();
-            
+
             // Ensure unique combination of Priority and Category
             entity.HasIndex(e => new { e.Priority, e.Category }).IsUnique();
         });

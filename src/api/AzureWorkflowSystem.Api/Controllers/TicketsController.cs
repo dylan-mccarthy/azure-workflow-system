@@ -166,7 +166,7 @@ public class TicketsController : ControllerBase
         // For now, use the admin user as the creator
         // In a real application, this would come from the authenticated user context
         var createdBy = await _context.Users.FirstAsync(u => u.Id == 1);
-        
+
         var ticket = new Ticket
         {
             Title = createTicketDto.Title,
@@ -260,7 +260,7 @@ public class TicketsController : ControllerBase
         if (updateTicketDto.Status.HasValue)
         {
             ticket.Status = updateTicketDto.Status.Value;
-            
+
             // Set timestamps based on status
             if (updateTicketDto.Status.Value == TicketStatus.Resolved && ticket.ResolvedAt == null)
                 ticket.ResolvedAt = DateTime.UtcNow;
@@ -369,8 +369,8 @@ public class TicketsController : ControllerBase
     private async Task CalculateSlaTargetDate(Ticket ticket)
     {
         var slaConfig = await _context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
+            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority &&
+                                    s.Category == ticket.Category &&
                                     s.IsActive);
 
         if (slaConfig != null)
