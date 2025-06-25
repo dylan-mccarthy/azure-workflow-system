@@ -59,7 +59,11 @@ jobs:
         uses: azure/CLI@v2
         with:
           azcliversion: latest
-          inlineScript: echo "Azure CLI setup complete"
+          inlineScript: |
+            echo "Azure CLI setup complete"
+            # Create a temporary Azure profile directory to avoid permission issues
+            mkdir -p ~/.azure
+            echo '{"installationId": "test", "subscriptions": []}' > ~/.azure/azureProfile.json
 
       - name: Validate Bicep files
         run: |
