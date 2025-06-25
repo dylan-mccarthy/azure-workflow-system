@@ -26,12 +26,14 @@ The infrastructure consists of the following Azure resources:
 ## Environment Configuration
 
 ### Development Environment
+
 - **Container Apps**: Basic tier with 1-3 replicas
 - **PostgreSQL**: Basic tier (Standard_B1ms) with 32GB storage
 - **API Management**: Developer tier
 - **High Availability**: Disabled for cost optimization
 
 ### Production Environment
+
 - **Container Apps**: Standard tier with 2-10 replicas
 - **PostgreSQL**: General Purpose tier (Standard_D2s_v3) with 128GB storage, geo-redundant backup
 - **API Management**: Basic tier with 2 instances
@@ -106,6 +108,7 @@ az resource list --resource-group "rg-awfs-dev" --output table
 ### Module Features
 
 Each module includes:
+
 - Comprehensive security configurations
 - Diagnostic settings for monitoring
 - Role-based access control
@@ -130,12 +133,14 @@ The deployment creates the following secrets in Key Vault:
 ## Cost Optimization
 
 ### Development Environment
+
 - Smaller SKUs for all resources
 - Single availability zone
 - Shorter backup retention (7 days)
 - Basic monitoring tier
 
 ### Production Environment
+
 - Optimized SKUs for performance and availability
 - Zone-redundant storage and high availability
 - Extended backup retention (35 days)
@@ -187,6 +192,7 @@ After successful deployment:
 ## Support
 
 For deployment issues or questions:
+
 - Review Azure Activity Log for detailed error messages
 - Check resource-specific diagnostic logs
 - Validate Bicep templates using `az deployment group validate`

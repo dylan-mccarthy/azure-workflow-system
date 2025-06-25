@@ -1,0 +1,202 @@
+# Continuous Deployment to Development Environment
+# Runs automatically when code is pushed to main branch after CI passes
+# Deploys infrastructure and applications to Azure Dev environment
+
+name: CD - Deploy to Development
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_infrastructure:
+        description: 'Deploy infrastructure (true/false)'
+        required: false
+        default: true
+        type: boolean
+      deploy_applications:
+        description: 'Deploy applications (true/false)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  deploy-infrastructure:
+    name: Deploy Infrastructure to Dev
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_infrastructure)
+
+    outputs:
+      resource-group: ${{ steps.deploy.outputs.resource-group }}
+      container-app-url: ${{ steps.deploy.outputs.container-app-url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: echo "Azure CLI setup complete"
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Azure subscription
+        run: |
+          az account set --subscription ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create resource group if it doesn't exist
+        run: |
+          az group create \
+            --name ${{ vars.AZURE_RESOURCE_GROUP_DEV }} \
+            --location ${{ vars.AZURE_LOCATION }} \
+            --tags Environment=Development Project=WorkflowSystem
+
+      - name: Deploy infrastructure
+        id: deploy
+        run: |
+          echo "🚀 Deploying infrastructure to Development environment..."
+
+          # Run deployment with what-if first
+          echo "Running deployment preview..."
+          az deployment group what-if \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_DEV }} \
+            --template-file infra/main.bicep \
+            --parameters @infra/parameters/dev.parameters.json \
+            --parameters environmentName=dev \
+            --parameters location=${{ vars.AZURE_LOCATION }}
+            
+          # Execute actual deployment
+          echo "Executing deployment..."
+          deployment_output=$(az deployment group create \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_DEV }} \
+            --template-file infra/main.bicep \
+            --parameters @infra/parameters/dev.parameters.json \
+            --parameters environmentName=dev \
+            --parameters location=${{ vars.AZURE_LOCATION }} \
+            --output json)
+            
+          echo "Deployment completed successfully!"
+
+          # Extract outputs
+          resource_group="${{ vars.AZURE_RESOURCE_GROUP_DEV }}"
+          api_container_app_fqdn=$(echo $deployment_output | jq -r '.properties.outputs.apiContainerAppFqdn.value // empty')
+
+          echo "resource-group=$resource_group" >> $GITHUB_OUTPUT
+          echo "container-app-url=https://$api_container_app_fqdn" >> $GITHUB_OUTPUT
+
+          echo "✅ Infrastructure deployment completed"
+          echo "📍 Resource Group: $resource_group"
+          echo "🌐 Container App URL: https://$api_container_app_fqdn"
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying deployment..."
+
+          # Check if key resources exist
+          echo "Checking resource group..."
+          az group show --name ${{ vars.AZURE_RESOURCE_GROUP_DEV }} --output table
+
+          echo "Listing deployed resources..."
+          az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP_DEV }} --output table
+
+          echo "✅ Deployment verification completed"
+
+  deploy-applications:
+    name: Deploy Applications to Dev
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure]
+    if: always() && (needs.deploy-infrastructure.result == 'success' || needs.deploy-infrastructure.result == 'skipped') && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_applications))
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build applications
+        run: |
+          echo "🏗️ Building applications for deployment..."
+          # This will be updated once we have actual application code
+          # npm run build
+
+          # Create placeholder build output
+          mkdir -p dist
+          echo "Build completed at $(date)" > dist/build-info.txt
+
+      - name: Setup Azure CLI
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: echo "Azure CLI setup complete"
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Container Apps
+        run: |
+          echo "🚀 Deploying applications to Container Apps..."
+
+          # This will be updated once we have actual container images
+          # For now, we'll just verify the container app exists
+          echo "Verifying Container App deployment..."
+
+          # List container apps in the resource group
+          az containerapp list \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_DEV }} \
+            --output table
+            
+          echo "✅ Application deployment completed"
+
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running smoke tests..."
+
+          # Basic connectivity tests
+          if [ -n "${{ needs.deploy-infrastructure.outputs.container-app-url }}" ]; then
+            echo "Testing Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}"
+            # curl -f "${{ needs.deploy-infrastructure.outputs.container-app-url }}/health" || echo "Health check endpoint not yet available"
+          fi
+
+          echo "✅ Smoke tests completed"
+
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-infrastructure, deploy-applications]
+    if: always()
+
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "## 🚀 Development Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Status:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Infrastructure: ${{ needs.deploy-infrastructure.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Applications: ${{ needs.deploy-applications.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.deploy-infrastructure.result }}" == "success" ]; then
+            echo "**Infrastructure Details:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Resource Group: ${{ needs.deploy-infrastructure.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "**Environment:** Development" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Time:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,7 @@
+node_modules
+coverage
+dist
+*.min.js
+*.min.css
+.bicep
+*.json
