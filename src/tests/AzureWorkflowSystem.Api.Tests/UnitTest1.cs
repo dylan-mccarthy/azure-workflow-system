@@ -5,7 +5,7 @@ using Xunit;
 
 namespace AzureWorkflowSystem.Api.Tests;
 
-public class DatabaseTests
+public class DatabaseBasicTests
 {
     [Fact]
     public async Task CanCreateUserInDatabase()

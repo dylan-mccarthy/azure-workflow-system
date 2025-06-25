@@ -454,3 +454,5 @@
 /home/runner/work/azure-workflow-system/azure-workflow-system/src/tests/AzureWorkflowSystem.Api.Tests/obj/Debug/net8.0/AzureWorkflowSystem.Api.Tests.pdb
 /home/runner/work/azure-workflow-system/azure-workflow-system/src/tests/AzureWorkflowSystem.Api.Tests/obj/Debug/net8.0/AzureWorkflowSystem.Api.Tests.genruntimeconfig.cache
 /home/runner/work/azure-workflow-system/azure-workflow-system/src/tests/AzureWorkflowSystem.Api.Tests/obj/Debug/net8.0/ref/AzureWorkflowSystem.Api.Tests.dll
+/home/runner/work/azure-workflow-system/azure-workflow-system/src/tests/AzureWorkflowSystem.Api.Tests/bin/Debug/net8.0/Castle.Core.dll
+/home/runner/work/azure-workflow-system/azure-workflow-system/src/tests/AzureWorkflowSystem.Api.Tests/bin/Debug/net8.0/Moq.dll
