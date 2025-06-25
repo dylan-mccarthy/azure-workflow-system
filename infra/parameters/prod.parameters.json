@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "prod"
+    },
+    "postgresAdminLogin": {
+      "value": "awfsadmin"
+    },
+    "postgresAdminPassword": {
+      "value": "TO_BE_REPLACED_IN_DEPLOYMENT"
+    },
+    "apiContainerImage": {
+      "value": "your-registry.azurecr.io/azure-workflow-api:latest"
+    },
+    "botContainerImage": {
+      "value": "your-registry.azurecr.io/azure-workflow-bot:latest"
+    }
+  }
+}

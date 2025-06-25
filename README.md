@@ -44,6 +44,7 @@ Current ad-hoc channels (email, Teams chat, spreadsheets) lack SLA tracking, own
 The system is built on Azure Container Apps with PostgreSQL for data storage, leveraging API Management for routing and security. Both Dev and Prod environments share identical IaC with parameter overrides.
 
 **Core Components:**
+
 - Azure Container Apps (B1 tier, auto-scale 1→3 replicas)
 - PostgreSQL (Basic tier, 2 vCores, 10 GB storage)
 - Azure API Management (Developer tier)
@@ -63,22 +64,22 @@ The system is built on Azure Container Apps with PostgreSQL for data storage, le
 
 The MVP development is planned for a 7-week timeline:
 
-| Phase | Duration | Milestone |
-|---|---|---|
-| Sprint 0 | 1 wk | Repo, CI/CD, IaC baseline; Dev & Prod provisioned |
-| Sprints 1-2 | 2 wks | API skeleton, DB schema, alert endpoint |
-| Sprints 3-4 | 2 wks | Teams bot MVP, Kanban UI basic |
-| Sprint 5 | 1 wk | SLA engine + countdown UI |
-| Sprint 6 | 1 wk | Reporting page, CSV export; Prod pilot |
+| Phase       | Duration | Milestone                                         |
+| ----------- | -------- | ------------------------------------------------- |
+| Sprint 0    | 1 wk     | Repo, CI/CD, IaC baseline; Dev & Prod provisioned |
+| Sprints 1-2 | 2 wks    | API skeleton, DB schema, alert endpoint           |
+| Sprints 3-4 | 2 wks    | Teams bot MVP, Kanban UI basic                    |
+| Sprint 5    | 1 wk     | SLA engine + countdown UI                         |
+| Sprint 6    | 1 wk     | Reporting page, CSV export; Prod pilot            |
 
 ## Success Metrics
 
-| Objective | KPI | Target |
-|---|---|---|
-| **Reduce MTTA** | Avg. time from ticket creation → acknowledgment | ≤ 10 min |
-| **Reduce MTTR** | Avg. ticket resolution duration | 25% ↓ vs. baseline |
-| **Improve SLA Compliance** | % tickets resolved within SLA | ≥ 95% |
-| **Increase Transparency** | % tickets visible in real-time board | 100% |
+| Objective                  | KPI                                             | Target             |
+| -------------------------- | ----------------------------------------------- | ------------------ |
+| **Reduce MTTA**            | Avg. time from ticket creation → acknowledgment | ≤ 10 min           |
+| **Reduce MTTR**            | Avg. ticket resolution duration                 | 25% ↓ vs. baseline |
+| **Improve SLA Compliance** | % tickets resolved within SLA                   | ≥ 95%              |
+| **Increase Transparency**  | % tickets visible in real-time board            | 100%               |
 
 ## Repository Structure
 
@@ -91,8 +92,8 @@ The MVP development is planned for a 7-week timeline:
 
 ## Getting Started
 
-*Coming soon*
+_Coming soon_
 
 ## License
 
-*Coming soon*
+_Coming soon_

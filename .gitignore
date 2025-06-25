@@ -217,3 +217,8 @@ docker-compose.override.yml
 *.key
 *.crt
 *.cer
+
+node_modules/
+dist/
+coverage/
+
