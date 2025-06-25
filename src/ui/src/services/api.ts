@@ -177,7 +177,8 @@ export class ApiService {
 
   static getAttachmentDownloadUrl(attachmentId: number): string {
     return `${API_BASE_URL}/attachments/${attachmentId}/download`;
-    
+  }
+
   // Reports
   static async getReportMetrics(filters?: ReportFiltersDto): Promise<ReportMetricsDto | null> {
     try {

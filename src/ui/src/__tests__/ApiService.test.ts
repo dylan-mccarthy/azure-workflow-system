@@ -102,6 +102,8 @@ describe('ApiService', () => {
 
       expect(url).toContain(`/attachments/${attachmentId}/download`);
       expect(typeof url).toBe('string');
+    });
+  });
 
   describe('Reporting Methods', () => {
     it('should have getReportMetrics method', () => {

@@ -24,7 +24,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -62,7 +62,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(5.0, metrics.MttaMinutes); // 5 minutes to acknowledgment
         Assert.Equal(1, metrics.TotalTickets);
         Assert.Equal(1, metrics.OpenTickets);
@@ -74,7 +74,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -113,7 +113,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(120.0, metrics.MttrMinutes); // 120 minutes to resolution
         Assert.Equal(1, metrics.TotalTickets);
         Assert.Equal(0, metrics.OpenTickets);
@@ -125,7 +125,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -180,7 +180,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(50.0, metrics.SlaCompliancePercentage); // 1 out of 2 tickets compliant = 50%
         Assert.Equal(2, metrics.TotalTickets);
     }
@@ -190,7 +190,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -248,13 +248,13 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var trends = Assert.IsType<List<TicketTrendDto>>(okResult.Value);
-        
+
         Assert.Equal(2, trends.Count);
-        
+
         var day1Trend = trends.First(t => t.Date.Date == day1.Date);
         Assert.Equal(2, day1Trend.OpenTickets);
         Assert.Equal(0, day1Trend.ClosedTickets);
-        
+
         var day2Trend = trends.First(t => t.Date.Date == day2.Date);
         Assert.Equal(0, day2Trend.OpenTickets);
         Assert.Equal(1, day2Trend.ClosedTickets);
@@ -265,7 +265,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -307,7 +307,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -361,7 +361,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -409,7 +409,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(1, metrics.TotalTickets); // Only the ticket in range
     }
 
@@ -418,7 +418,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -461,7 +461,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(1, metrics.TotalTickets); // Only high priority ticket
     }
 
@@ -470,7 +470,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -513,7 +513,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(1, metrics.TotalTickets); // Only incident ticket
     }
 
@@ -530,7 +530,7 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var metrics = Assert.IsType<ReportMetricsDto>(okResult.Value);
-        
+
         Assert.Equal(0, metrics.MttaMinutes);
         Assert.Equal(0, metrics.MttrMinutes);
         Assert.Equal(100, metrics.SlaCompliancePercentage); // Default to 100% when no SLA tickets
@@ -555,9 +555,10 @@ public class ReportsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var trends = Assert.IsType<List<TicketTrendDto>>(okResult.Value);
-        
+
         Assert.Equal(3, trends.Count); // 3 days
-        Assert.All(trends, trend => {
+        Assert.All(trends, trend =>
+        {
             Assert.Equal(0, trend.OpenTickets);
             Assert.Equal(0, trend.ClosedTickets);
         });
@@ -568,7 +569,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -613,7 +614,7 @@ public class ReportsControllerTests
         // Assert
         var fileResult = Assert.IsType<FileContentResult>(result);
         var csvContent = System.Text.Encoding.UTF8.GetString(fileResult.FileContents);
-        
+
         Assert.Contains("High Priority Ticket", csvContent);
         Assert.DoesNotContain("Medium Priority Ticket", csvContent);
     }
@@ -623,7 +624,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -656,7 +657,7 @@ public class ReportsControllerTests
         // Assert
         var fileResult = Assert.IsType<FileContentResult>(result);
         var csvContent = System.Text.Encoding.UTF8.GetString(fileResult.FileContents);
-        
+
         Assert.Contains("\"Test \"\"Quoted\"\" Title\"", csvContent); // Escaped quotes
         Assert.Contains("\"Description with, comma and \"\"quotes\"\"\"", csvContent); // Escaped quotes and commas
     }
@@ -666,7 +667,7 @@ public class ReportsControllerTests
     {
         // Arrange
         using var context = GetInMemoryContext();
-        
+
         var user = new User
         {
             Email = "test@example.com",
@@ -730,7 +731,7 @@ public class ReportsControllerTests
         // Assert
         var fileResult = Assert.IsType<FileContentResult>(result);
         var csvContent = System.Text.Encoding.UTF8.GetString(fileResult.FileContents);
-        
+
         Assert.Contains("Created Ticket 1", csvContent);
         Assert.DoesNotContain("Created Ticket 2", csvContent);
     }

@@ -49,7 +49,7 @@ public class ReportsController : ControllerBase
 
         // Calculate MTTA (Mean Time To Acknowledgment)
         var acknowledgedTickets = tickets.Where(t => t.AssignedToId.HasValue).ToList();
-        var mttaMinutes = acknowledgedTickets.Any() 
+        var mttaMinutes = acknowledgedTickets.Any()
             ? acknowledgedTickets.Average(t => (t.UpdatedAt - t.CreatedAt).TotalMinutes)
             : 0;
 
@@ -61,7 +61,7 @@ public class ReportsController : ControllerBase
 
         // Calculate SLA Compliance
         var ticketsWithSla = tickets.Where(t => t.SlaTargetDate.HasValue).ToList();
-        var slaCompliantTickets = ticketsWithSla.Where(t => 
+        var slaCompliantTickets = ticketsWithSla.Where(t =>
             !t.IsSlaBreach && (t.ResolvedAt == null || t.ResolvedAt <= t.SlaTargetDate)).ToList();
         var slaCompliancePercentage = ticketsWithSla.Any()
             ? (double)slaCompliantTickets.Count / ticketsWithSla.Count * 100
@@ -155,13 +155,13 @@ public class ReportsController : ControllerBase
         foreach (var ticket in tickets)
         {
             csv.AppendLine($"{ticket.Id}," +
-                          $"\"{ticket.Title.Replace("\"", "\"\"")}\","+
-                          $"\"{ticket.Description?.Replace("\"", "\"\"") ?? ""}\","+
+                          $"\"{ticket.Title.Replace("\"", "\"\"")}\"," +
+                          $"\"{ticket.Description?.Replace("\"", "\"\"") ?? ""}\"," +
                           $"{ticket.Status}," +
                           $"{ticket.Priority}," +
                           $"{ticket.Category}," +
                           $"\"{ticket.CreatedBy.FirstName} {ticket.CreatedBy.LastName}\"," +
-                          $"\"{(ticket.AssignedTo != null ? $"{ticket.AssignedTo.FirstName} {ticket.AssignedTo.LastName}" : "")}\","+
+                          $"\"{(ticket.AssignedTo != null ? $"{ticket.AssignedTo.FirstName} {ticket.AssignedTo.LastName}" : "")}\"," +
                           $"{ticket.SlaTargetDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? ""}," +
                           $"{ticket.IsSlaBreach}," +
                           $"{ticket.CreatedAt:yyyy-MM-dd HH:mm:ss}," +
@@ -206,11 +206,11 @@ public class ReportsController : ControllerBase
         {
             csv.AppendLine($"{log.Id}," +
                           $"{log.TicketId ?? 0}," +
-                          $"\"{log.Action.Replace("\"", "\"\"")}\","+
-                          $"\"{log.Details?.Replace("\"", "\"\"") ?? ""}\","+
+                          $"\"{log.Action.Replace("\"", "\"\"")}\"," +
+                          $"\"{log.Details?.Replace("\"", "\"\"") ?? ""}\"," +
                           $"\"{log.User.FirstName} {log.User.LastName}\"," +
-                          $"\"{log.OldValues?.Replace("\"", "\"\"") ?? ""}\","+
-                          $"\"{log.NewValues?.Replace("\"", "\"\"") ?? ""}\","+
+                          $"\"{log.OldValues?.Replace("\"", "\"\"") ?? ""}\"," +
+                          $"\"{log.NewValues?.Replace("\"", "\"\"") ?? ""}\"," +
                           $"{log.CreatedAt:yyyy-MM-dd HH:mm:ss}");
         }
 

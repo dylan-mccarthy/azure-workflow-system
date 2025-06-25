@@ -19,10 +19,10 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
     {
         // For development/testing, we'll simulate the current user role
         // In a real implementation, this would check the JWT token claims
-        
+
         // For now, assume the user has Manager role (this would come from JWT in production)
         var currentUserRole = UserRole.Manager;
-        
+
         if (!_allowedRoles.Contains(currentUserRole))
         {
             context.Result = new ForbidResult();
