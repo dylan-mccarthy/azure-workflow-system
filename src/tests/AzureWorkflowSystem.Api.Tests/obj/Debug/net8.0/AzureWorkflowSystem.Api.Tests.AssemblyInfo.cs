@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AzureWorkflowSystem.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cdd72f7a03e8a21482fee2522496b00d5725bb04")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2581e89f7201111e147bd58dc524407038f4480")]
 [assembly: System.Reflection.AssemblyProductAttribute("AzureWorkflowSystem.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AzureWorkflowSystem.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
