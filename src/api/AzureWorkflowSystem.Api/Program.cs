@@ -1,5 +1,7 @@
 using AzureWorkflowSystem.Api.Authentication;
+using AzureWorkflowSystem.Api.BackgroundServices;
 using AzureWorkflowSystem.Api.Data;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +17,14 @@ builder.Services.AddControllers();
 // Add Entity Framework
 builder.Services.AddDbContext<WorkflowDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add application services
+builder.Services.AddScoped<ISlaService, SlaService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddHttpClient();
+
+// Add background services
+builder.Services.AddHostedService<SlaMonitoringService>();
 
 // Add Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

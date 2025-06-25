@@ -52,6 +52,8 @@ const mockTicket: TicketDto = {
     updatedAt: '2024-01-01T00:00:00Z',
   },
   isSlaBreach: false,
+  isImminentSlaBreach: false,
+  slaRemainingMinutes: 120,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
   attachmentCount: 0,

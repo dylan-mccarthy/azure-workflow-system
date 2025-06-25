@@ -2,6 +2,7 @@ using AzureWorkflowSystem.Api.Controllers;
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,9 @@ public class AlertsControllerTests
     private static AlertsController GetController(WorkflowDbContext context)
     {
         var logger = new Mock<ILogger<AlertsController>>();
-        var controller = new AlertsController(context, logger.Object);
+        var slaServiceLogger = new Mock<ILogger<SlaService>>();
+        var slaService = new SlaService(context, slaServiceLogger.Object);
+        var controller = new AlertsController(context, logger.Object, slaService);
         
         // Set up authenticated context for API key authorization
         var httpContext = new DefaultHttpContext();
@@ -399,7 +402,9 @@ public class AlertsControllerTests
 
         // Create controller without authentication context (simulates missing API key)
         var logger = new Mock<ILogger<AlertsController>>();
-        var controller = new AlertsController(context, logger.Object);
+        var slaServiceLogger = new Mock<ILogger<SlaService>>();
+        var slaService = new SlaService(context, slaServiceLogger.Object);
+        var controller = new AlertsController(context, logger.Object, slaService);
         
         // Create mock HttpContext without X-API-Key header
         var httpContext = new DefaultHttpContext();

@@ -18,6 +18,8 @@ public class TicketDto
     
     public DateTime? SlaTargetDate { get; set; }
     public bool IsSlaBreach { get; set; }
+    public bool IsImminentSlaBreach { get; set; }
+    public int? SlaRemainingMinutes { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
