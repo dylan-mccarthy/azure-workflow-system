@@ -248,12 +248,12 @@ public class AlertsControllerTests
         using var context = GetDbContext();
         var user = await CreateTestUser(context);
 
-        // Create SLA configuration for critical alerts
+        // Create SLA configuration for emergency alerts
         var slaConfig = new SlaConfiguration
         {
-            Priority = TicketPriority.Critical,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Alert,
-            ResolutionTimeMinutes = 30, // 30 minutes for critical alerts
+            ResolutionTimeMinutes = 30, // 30 minutes for emergency alerts
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -262,7 +262,7 @@ public class AlertsControllerTests
         await context.SaveChangesAsync();
 
         var controller = GetController(context);
-        var alertPayload = CreateTestAlertPayload("sla-test-alert", "critical");
+        var alertPayload = CreateTestAlertPayload("sla-test-alert", "emergency");
 
         // Act
         var result = await controller.ProcessAlert(alertPayload);
