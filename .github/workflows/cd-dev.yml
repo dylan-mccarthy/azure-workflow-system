@@ -84,14 +84,14 @@ jobs:
         
         # Extract outputs
         resource_group="${{ vars.AZURE_RESOURCE_GROUP_DEV }}"
-        container_app_url=$(echo $deployment_output | jq -r '.properties.outputs.containerAppUrl.value // empty')
+        api_container_app_fqdn=$(echo $deployment_output | jq -r '.properties.outputs.apiContainerAppFqdn.value // empty')
         
         echo "resource-group=$resource_group" >> $GITHUB_OUTPUT
-        echo "container-app-url=$container_app_url" >> $GITHUB_OUTPUT
+        echo "container-app-url=https://$api_container_app_fqdn" >> $GITHUB_OUTPUT
         
         echo "✅ Infrastructure deployment completed"
         echo "📍 Resource Group: $resource_group"
-        echo "🌐 Container App URL: $container_app_url"
+        echo "🌐 Container App URL: https://$api_container_app_fqdn"
         
     - name: Verify deployment
       run: |
