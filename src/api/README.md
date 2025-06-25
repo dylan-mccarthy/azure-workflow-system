@@ -31,6 +31,7 @@ TBD: Instructions for local development setup
 ## Architecture
 
 The API follows a clean architecture pattern with the following layers:
+
 - Controllers (API endpoints)
 - Services (Business logic)
 - Data Access (Repository pattern)

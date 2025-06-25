@@ -9,11 +9,9 @@ The project uses GitHub Actions for continuous integration and deployment with t
 1. **CI (Continuous Integration)** - `ci.yml`
    - Runs on all pull requests and pushes to main
    - Performs linting, testing, security scanning, and Bicep validation
-   
 2. **CD Development** - `cd-dev.yml`
    - Automatically deploys to development environment on main branch pushes
    - Can be manually triggered with options to deploy infrastructure/applications separately
-   
 3. **CD Production** - `cd-prod.yml`
    - Manual deployment to production with confirmation required
    - Triggered by releases or manual workflow dispatch
@@ -23,6 +21,7 @@ The project uses GitHub Actions for continuous integration and deployment with t
 ### GitHub Secrets (Repository Settings > Secrets and Variables > Actions)
 
 #### For Development Environment:
+
 - `AZURE_CREDENTIALS` - Azure service principal credentials for development deployments
   ```json
   {
@@ -34,6 +33,7 @@ The project uses GitHub Actions for continuous integration and deployment with t
   ```
 
 #### For Production Environment:
+
 - `AZURE_CREDENTIALS_PROD` - Azure service principal credentials for production deployments
   ```json
   {
@@ -45,16 +45,19 @@ The project uses GitHub Actions for continuous integration and deployment with t
   ```
 
 #### Optional Secrets:
+
 - `CODECOV_TOKEN` - Token for uploading test coverage reports to Codecov
 
 ### GitHub Variables (Repository Settings > Secrets and Variables > Actions)
 
 #### For Development Environment:
+
 - `AZURE_SUBSCRIPTION_ID` - Azure subscription ID for development resources
 - `AZURE_RESOURCE_GROUP_DEV` - Resource group name for development environment
 - `AZURE_LOCATION` - Azure region (e.g., "eastus", "westus2")
 
 #### For Production Environment:
+
 - `AZURE_SUBSCRIPTION_ID_PROD` - Azure subscription ID for production resources (can be same as dev)
 - `AZURE_RESOURCE_GROUP_PROD` - Resource group name for production environment
 
@@ -125,6 +128,7 @@ Set up branch protection for the `main` branch:
 ## Workflow Features
 
 ### CI Pipeline Features:
+
 - **Code Quality**: ESLint and Prettier checks
 - **Testing**: Jest unit tests with coverage reporting
 - **Security**: Trivy vulnerability scanning
@@ -132,6 +136,7 @@ Set up branch protection for the `main` branch:
 - **Build Artifacts**: Creates build artifacts for deployment
 
 ### CD Development Pipeline Features:
+
 - **Automatic Deployment**: Triggers on main branch pushes
 - **Manual Deployment**: Can be triggered manually with options
 - **Infrastructure as Code**: Deploys Bicep templates
@@ -140,6 +145,7 @@ Set up branch protection for the `main` branch:
 - **Deployment Summary**: Detailed deployment status and URLs
 
 ### CD Production Pipeline Features:
+
 - **Manual Only**: Requires explicit confirmation or release trigger
 - **Security Validation**: Pre-deployment security checkpoint
 - **Confirmation Required**: Must type "DEPLOY_TO_PRODUCTION" to confirm
@@ -150,12 +156,15 @@ Set up branch protection for the `main` branch:
 ## Usage Examples
 
 ### Running CI Manually
+
 CI runs automatically on PRs and main branch pushes, but you can also:
+
 1. Go to Actions tab
 2. Select "CI - Continuous Integration"
 3. Click "Run workflow"
 
 ### Manual Development Deployment
+
 1. Go to Actions tab
 2. Select "CD - Deploy to Development"
 3. Click "Run workflow"
@@ -164,6 +173,7 @@ CI runs automatically on PRs and main branch pushes, but you can also:
    - Deploy applications: true/false
 
 ### Manual Production Deployment
+
 1. Go to Actions tab
 2. Select "CD - Deploy to Production"
 3. Click "Run workflow"
@@ -175,17 +185,20 @@ CI runs automatically on PRs and main branch pushes, but you can also:
 ## Monitoring and Troubleshooting
 
 ### View Deployment Logs
+
 - Go to Actions tab in GitHub
 - Click on the specific workflow run
 - Expand the job and step to view detailed logs
 
 ### Common Issues
+
 1. **Azure Authentication Failed**: Check service principal credentials and permissions
 2. **Resource Group Not Found**: Ensure resource groups exist or workflows create them
 3. **Bicep Validation Errors**: Check template syntax and parameter files
 4. **Missing Secrets/Variables**: Verify all required secrets and variables are set
 
 ### Health Checks
+
 - Monitor deployment summaries in workflow runs
 - Check Azure portal for resource status
 - Review application logs in Container Apps
@@ -203,6 +216,7 @@ CI runs automatically on PRs and main branch pushes, but you can also:
 ## Maintenance
 
 ### Regular Tasks:
+
 - Review and rotate Azure service principal secrets
 - Update workflow dependencies (actions versions)
 - Monitor deployment success rates
@@ -210,6 +224,7 @@ CI runs automatically on PRs and main branch pushes, but you can also:
 - Update Bicep templates as needed
 
 ### Upgrades:
+
 - Test workflow changes in development first
 - Update Azure CLI and Bicep versions periodically
 - Review and update security scanning tools

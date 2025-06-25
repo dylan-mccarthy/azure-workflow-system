@@ -29,255 +29,255 @@ jobs:
     name: Pre-deployment Validation
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
-    
+
     outputs:
       deploy-confirmed: ${{ steps.validate.outputs.deploy-confirmed }}
-      
+
     steps:
-    - name: Validate deployment request
-      id: validate
-      run: |
-        if [ "${{ github.event_name }}" == "release" ]; then
-          echo "✅ Release deployment - proceeding without manual confirmation"
-          echo "deploy-confirmed=true" >> $GITHUB_OUTPUT
-        elif [ "${{ github.event.inputs.confirmation }}" == "DEPLOY_TO_PRODUCTION" ]; then
-          echo "✅ Manual deployment confirmed"
-          echo "deploy-confirmed=true" >> $GITHUB_OUTPUT
-        else
-          echo "❌ Production deployment requires confirmation"
-          echo "Please type 'DEPLOY_TO_PRODUCTION' in the confirmation field"
-          echo "deploy-confirmed=false" >> $GITHUB_OUTPUT
-          exit 1
-        fi
-        
-    - name: Security checkpoint
-      run: |
-        echo "🔒 Production Deployment Security Checkpoint"
-        echo "- Event: ${{ github.event_name }}"
-        echo "- Actor: ${{ github.actor }}"
-        echo "- SHA: ${{ github.sha }}"
-        echo "- Ref: ${{ github.ref }}"
-        
-        # Additional security checks could go here
-        echo "✅ Security checkpoint passed"
+      - name: Validate deployment request
+        id: validate
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "✅ Release deployment - proceeding without manual confirmation"
+            echo "deploy-confirmed=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.confirmation }}" == "DEPLOY_TO_PRODUCTION" ]; then
+            echo "✅ Manual deployment confirmed"
+            echo "deploy-confirmed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Production deployment requires confirmation"
+            echo "Please type 'DEPLOY_TO_PRODUCTION' in the confirmation field"
+            echo "deploy-confirmed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Security checkpoint
+        run: |
+          echo "🔒 Production Deployment Security Checkpoint"
+          echo "- Event: ${{ github.event_name }}"
+          echo "- Actor: ${{ github.actor }}"
+          echo "- SHA: ${{ github.sha }}"
+          echo "- Ref: ${{ github.ref }}"
+
+          # Additional security checks could go here
+          echo "✅ Security checkpoint passed"
 
   deploy-infrastructure:
     name: Deploy Infrastructure to Production
     runs-on: ubuntu-latest
     needs: [validation]
     if: needs.validation.outputs.deploy-confirmed == 'true' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.deploy_infrastructure))
-    
+
     outputs:
       resource-group: ${{ steps.deploy.outputs.resource-group }}
       container-app-url: ${{ steps.deploy.outputs.container-app-url }}
-      
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Azure CLI
-      uses: azure/CLI@v2
-      with:
-        azcliversion: latest
-        inlineScript: echo "Azure CLI setup complete"
-        
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
-        
-    - name: Set Azure subscription
-      run: |
-        az account set --subscription ${{ vars.AZURE_SUBSCRIPTION_ID_PROD }}
-        
-    - name: Production deployment confirmation
-      run: |
-        echo "🚨 PRODUCTION DEPLOYMENT STARTING 🚨"
-        echo "Environment: PRODUCTION"
-        echo "Resource Group: ${{ vars.AZURE_RESOURCE_GROUP_PROD }}"
-        echo "Location: ${{ vars.AZURE_LOCATION }}"
-        echo "Deployment initiated by: ${{ github.actor }}"
-        
-    - name: Create resource group if it doesn't exist
-      run: |
-        az group create \
-          --name ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
-          --location ${{ vars.AZURE_LOCATION }} \
-          --tags Environment=Production Project=WorkflowSystem
-          
-    - name: Deploy infrastructure
-      id: deploy
-      run: |
-        echo "🚀 Deploying infrastructure to Production environment..."
-        
-        # Run deployment with what-if first for final review
-        echo "Running deployment preview..."
-        az deployment group what-if \
-          --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
-          --template-file infra/main.bicep \
-          --parameters @infra/parameters/prod.parameters.json \
-          --parameters environmentName=prod \
-          --parameters location=${{ vars.AZURE_LOCATION }}
-          
-        # Execute actual deployment
-        echo "Executing production deployment..."
-        deployment_output=$(az deployment group create \
-          --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
-          --template-file infra/main.bicep \
-          --parameters @infra/parameters/prod.parameters.json \
-          --parameters environmentName=prod \
-          --parameters location=${{ vars.AZURE_LOCATION }} \
-          --output json)
-          
-        echo "Production deployment completed successfully!"
-        
-        # Extract outputs
-        resource_group="${{ vars.AZURE_RESOURCE_GROUP_PROD }}"
-        api_container_app_fqdn=$(echo $deployment_output | jq -r '.properties.outputs.apiContainerAppFqdn.value // empty')
-        
-        echo "resource-group=$resource_group" >> $GITHUB_OUTPUT
-        echo "container-app-url=https://$api_container_app_fqdn" >> $GITHUB_OUTPUT
-        
-        echo "✅ Production infrastructure deployment completed"
-        echo "📍 Resource Group: $resource_group"
-        echo "🌐 Container App URL: https://$api_container_app_fqdn"
-        
-    - name: Verify deployment
-      run: |
-        echo "🔍 Verifying production deployment..."
-        
-        # Check if key resources exist
-        echo "Checking resource group..."
-        az group show --name ${{ vars.AZURE_RESOURCE_GROUP_PROD }} --output table
-        
-        echo "Listing deployed resources..."
-        az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} --output table
-        
-        echo "✅ Production deployment verification completed"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: echo "Azure CLI setup complete"
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Set Azure subscription
+        run: |
+          az account set --subscription ${{ vars.AZURE_SUBSCRIPTION_ID_PROD }}
+
+      - name: Production deployment confirmation
+        run: |
+          echo "🚨 PRODUCTION DEPLOYMENT STARTING 🚨"
+          echo "Environment: PRODUCTION"
+          echo "Resource Group: ${{ vars.AZURE_RESOURCE_GROUP_PROD }}"
+          echo "Location: ${{ vars.AZURE_LOCATION }}"
+          echo "Deployment initiated by: ${{ github.actor }}"
+
+      - name: Create resource group if it doesn't exist
+        run: |
+          az group create \
+            --name ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
+            --location ${{ vars.AZURE_LOCATION }} \
+            --tags Environment=Production Project=WorkflowSystem
+
+      - name: Deploy infrastructure
+        id: deploy
+        run: |
+          echo "🚀 Deploying infrastructure to Production environment..."
+
+          # Run deployment with what-if first for final review
+          echo "Running deployment preview..."
+          az deployment group what-if \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
+            --template-file infra/main.bicep \
+            --parameters @infra/parameters/prod.parameters.json \
+            --parameters environmentName=prod \
+            --parameters location=${{ vars.AZURE_LOCATION }}
+            
+          # Execute actual deployment
+          echo "Executing production deployment..."
+          deployment_output=$(az deployment group create \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
+            --template-file infra/main.bicep \
+            --parameters @infra/parameters/prod.parameters.json \
+            --parameters environmentName=prod \
+            --parameters location=${{ vars.AZURE_LOCATION }} \
+            --output json)
+            
+          echo "Production deployment completed successfully!"
+
+          # Extract outputs
+          resource_group="${{ vars.AZURE_RESOURCE_GROUP_PROD }}"
+          api_container_app_fqdn=$(echo $deployment_output | jq -r '.properties.outputs.apiContainerAppFqdn.value // empty')
+
+          echo "resource-group=$resource_group" >> $GITHUB_OUTPUT
+          echo "container-app-url=https://$api_container_app_fqdn" >> $GITHUB_OUTPUT
+
+          echo "✅ Production infrastructure deployment completed"
+          echo "📍 Resource Group: $resource_group"
+          echo "🌐 Container App URL: https://$api_container_app_fqdn"
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying production deployment..."
+
+          # Check if key resources exist
+          echo "Checking resource group..."
+          az group show --name ${{ vars.AZURE_RESOURCE_GROUP_PROD }} --output table
+
+          echo "Listing deployed resources..."
+          az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} --output table
+
+          echo "✅ Production deployment verification completed"
 
   deploy-applications:
     name: Deploy Applications to Production
     runs-on: ubuntu-latest
     needs: [validation, deploy-infrastructure]
     if: needs.validation.outputs.deploy-confirmed == 'true' && (needs.deploy-infrastructure.result == 'success' || needs.deploy-infrastructure.result == 'skipped') && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.deploy_applications))
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build applications for production
-      run: |
-        echo "🏗️ Building applications for production deployment..."
-        # This will be updated once we have actual application code
-        # npm run build:prod
-        
-        # Create placeholder production build output
-        mkdir -p dist
-        echo "Production build completed at $(date)" > dist/build-info.txt
-        echo "Environment: Production" >> dist/build-info.txt
-        
-    - name: Setup Azure CLI
-      uses: azure/CLI@v2
-      with:
-        azcliversion: latest
-        inlineScript: echo "Azure CLI setup complete"
-        
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
-        
-    - name: Deploy to Container Apps
-      run: |
-        echo "🚀 Deploying applications to Production Container Apps..."
-        
-        # This will be updated once we have actual container images
-        # For now, we'll just verify the container app exists
-        echo "Verifying Production Container App deployment..."
-        
-        # List container apps in the production resource group
-        az containerapp list \
-          --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
-          --output table
-          
-        echo "✅ Production application deployment completed"
-        
-    - name: Run production smoke tests
-      run: |
-        echo "🧪 Running production smoke tests..."
-        
-        # Basic connectivity tests
-        if [ -n "${{ needs.deploy-infrastructure.outputs.container-app-url }}" ]; then
-          echo "Testing Production Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}"
-          # curl -f "${{ needs.deploy-infrastructure.outputs.container-app-url }}/health" || echo "Health check endpoint not yet available"
-        fi
-        
-        echo "✅ Production smoke tests completed"
-        
-    - name: Post-deployment verification
-      run: |
-        echo "🔍 Running post-deployment verification..."
-        
-        # Additional production health checks would go here
-        echo "- Database connectivity: Pending implementation"
-        echo "- API endpoints: Pending implementation"
-        echo "- External integrations: Pending implementation"
-        
-        echo "✅ Post-deployment verification completed"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build applications for production
+        run: |
+          echo "🏗️ Building applications for production deployment..."
+          # This will be updated once we have actual application code
+          # npm run build:prod
+
+          # Create placeholder production build output
+          mkdir -p dist
+          echo "Production build completed at $(date)" > dist/build-info.txt
+          echo "Environment: Production" >> dist/build-info.txt
+
+      - name: Setup Azure CLI
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: echo "Azure CLI setup complete"
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Deploy to Container Apps
+        run: |
+          echo "🚀 Deploying applications to Production Container Apps..."
+
+          # This will be updated once we have actual container images
+          # For now, we'll just verify the container app exists
+          echo "Verifying Production Container App deployment..."
+
+          # List container apps in the production resource group
+          az containerapp list \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP_PROD }} \
+            --output table
+            
+          echo "✅ Production application deployment completed"
+
+      - name: Run production smoke tests
+        run: |
+          echo "🧪 Running production smoke tests..."
+
+          # Basic connectivity tests
+          if [ -n "${{ needs.deploy-infrastructure.outputs.container-app-url }}" ]; then
+            echo "Testing Production Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}"
+            # curl -f "${{ needs.deploy-infrastructure.outputs.container-app-url }}/health" || echo "Health check endpoint not yet available"
+          fi
+
+          echo "✅ Production smoke tests completed"
+
+      - name: Post-deployment verification
+        run: |
+          echo "🔍 Running post-deployment verification..."
+
+          # Additional production health checks would go here
+          echo "- Database connectivity: Pending implementation"
+          echo "- API endpoints: Pending implementation"
+          echo "- External integrations: Pending implementation"
+
+          echo "✅ Post-deployment verification completed"
 
   deployment-notification:
     name: Deployment Notification
     runs-on: ubuntu-latest
     needs: [validation, deploy-infrastructure, deploy-applications]
     if: always() && needs.validation.outputs.deploy-confirmed == 'true'
-    
+
     steps:
-    - name: Generate deployment notification
-      run: |
-        echo "## 🚨 PRODUCTION DEPLOYMENT SUMMARY 🚨" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**⚠️ CRITICAL: Production Environment Updated**" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Deployment Status:**" >> $GITHUB_STEP_SUMMARY
-        echo "- Infrastructure: ${{ needs.deploy-infrastructure.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Applications: ${{ needs.deploy-applications.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        
-        if [ "${{ needs.deploy-infrastructure.result }}" == "success" ]; then
-          echo "**Infrastructure Details:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Resource Group: ${{ needs.deploy-infrastructure.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}" >> $GITHUB_STEP_SUMMARY
+      - name: Generate deployment notification
+        run: |
+          echo "## 🚨 PRODUCTION DEPLOYMENT SUMMARY 🚨" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "**Environment:** 🔴 PRODUCTION" >> $GITHUB_STEP_SUMMARY
-        echo "**Deployment Time:** $(date -u)" >> $GITHUB_STEP_SUMMARY
-        echo "**Commit SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-        
-        # Set overall status
-        overall_status="success"
-        if [ "${{ needs.deploy-infrastructure.result }}" != "success" ] && [ "${{ needs.deploy-infrastructure.result }}" != "skipped" ]; then
-          overall_status="failed"
-        fi
-        if [ "${{ needs.deploy-applications.result }}" != "success" ] && [ "${{ needs.deploy-applications.result }}" != "skipped" ]; then
-          overall_status="failed"
-        fi
-        
-        if [ "$overall_status" == "success" ]; then
+          echo "**⚠️ CRITICAL: Production Environment Updated**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **PRODUCTION DEPLOYMENT SUCCESSFUL**" >> $GITHUB_STEP_SUMMARY
-        else
+          echo "**Deployment Status:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Infrastructure: ${{ needs.deploy-infrastructure.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Applications: ${{ needs.deploy-applications.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "❌ **PRODUCTION DEPLOYMENT FAILED**" >> $GITHUB_STEP_SUMMARY
-        fi
+
+          if [ "${{ needs.deploy-infrastructure.result }}" == "success" ]; then
+            echo "**Infrastructure Details:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Resource Group: ${{ needs.deploy-infrastructure.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Container App URL: ${{ needs.deploy-infrastructure.outputs.container-app-url }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "**Environment:** 🔴 PRODUCTION" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Time:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+          # Set overall status
+          overall_status="success"
+          if [ "${{ needs.deploy-infrastructure.result }}" != "success" ] && [ "${{ needs.deploy-infrastructure.result }}" != "skipped" ]; then
+            overall_status="failed"
+          fi
+          if [ "${{ needs.deploy-applications.result }}" != "success" ] && [ "${{ needs.deploy-applications.result }}" != "skipped" ]; then
+            overall_status="failed"
+          fi
+
+          if [ "$overall_status" == "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **PRODUCTION DEPLOYMENT SUCCESSFUL**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **PRODUCTION DEPLOYMENT FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
