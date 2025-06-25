@@ -30,7 +30,29 @@ public class AlertsControllerTests
     private static AlertsController GetController(WorkflowDbContext context)
     {
         var logger = new Mock<ILogger<AlertsController>>();
-        return new AlertsController(context, logger.Object);
+        var controller = new AlertsController(context, logger.Object);
+        
+        // Set up authenticated context for API key authorization
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["X-API-Key"] = "development-webhook-api-key-for-testing-only";
+        
+        // Mock successful authentication
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, "WebhookClient"),
+            new Claim(ClaimTypes.NameIdentifier, "webhook-client"),
+            new Claim("webhook", "true")
+        };
+        var identity = new ClaimsIdentity(claims, "ApiKey");
+        var principal = new ClaimsPrincipal(identity);
+        httpContext.User = principal;
+        
+        controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = httpContext
+        };
+        
+        return controller;
     }
 
     private static async Task<User> CreateTestUser(WorkflowDbContext context)
