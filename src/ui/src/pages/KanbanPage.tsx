@@ -57,6 +57,14 @@ const KanbanPage: React.FC = () => {
 
         setTickets(ticketsData);
         setEngineers(engineersData);
+        
+        // If both arrays are empty, API might not be available
+        if (ticketsData.length === 0 && engineersData.length === 0) {
+          setError(
+            'No data available. This could mean the API server is not running or accessible. ' +
+            'Please ensure the backend API is running on https://localhost:7000'
+          );
+        }
       } catch (err) {
         console.error('Failed to load data:', err);
         setError('Failed to load kanban data. Please try again.');
@@ -74,11 +82,11 @@ const KanbanPage: React.FC = () => {
       return;
     }
 
-    try {
-      if (newAssigneeId !== undefined) {
-        // Assign the ticket
-        await ApiService.assignTicket(ticketId, { assignedToId: newAssigneeId });
-
+    if (newAssigneeId !== undefined) {
+      // Assign the ticket
+      const success = await ApiService.assignTicket(ticketId, { assignedToId: newAssigneeId });
+      
+      if (success) {
         // Update local state - ticket assignment
         setTickets((prevTickets) =>
           prevTickets.map((ticket) =>
@@ -96,10 +104,9 @@ const KanbanPage: React.FC = () => {
 
         // Clear any previous errors
         setError(null);
+      } else {
+        setError('Failed to assign ticket. The API server may not be available.');
       }
-    } catch (err) {
-      console.error('Failed to move ticket:', err);
-      setError('Failed to assign ticket. Please try again.');
     }
   };
 

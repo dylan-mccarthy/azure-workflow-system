@@ -10,7 +10,7 @@ import {
 } from '../types/api';
 
 // API base URL - this would typically come from environment variables
-const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://localhost:7000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7000/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -30,6 +30,22 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Add error handling interceptor
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error);
+    
+    // Check if it's a network error (API not available)
+    if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+      console.warn('API server is not available. Running in offline mode.');
+      // You could implement offline fallback here
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 export interface GetTicketsParams {
   status?: TicketStatus;
   priority?: TicketPriority;
@@ -40,38 +56,77 @@ export interface GetTicketsParams {
 export class ApiService {
   // Tickets
   static async getTickets(params?: GetTicketsParams): Promise<TicketDto[]> {
-    const response = await apiClient.get<TicketDto[]>('/tickets', { params });
-    return response.data;
+    try {
+      const response = await apiClient.get<TicketDto[]>('/tickets', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+      // Return empty array as fallback to prevent UI crashes
+      return [];
+    }
   }
 
-  static async getTicket(id: number): Promise<TicketDto> {
-    const response = await apiClient.get<TicketDto>(`/tickets/${id}`);
-    return response.data;
+  static async getTicket(id: number): Promise<TicketDto | null> {
+    try {
+      const response = await apiClient.get<TicketDto>(`/tickets/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch ticket ${id}:`, error);
+      return null;
+    }
   }
 
-  static async assignTicket(id: number, assignData: AssignTicketDto): Promise<void> {
-    await apiClient.put(`/tickets/${id}/assignee`, assignData);
+  static async assignTicket(id: number, assignData: AssignTicketDto): Promise<boolean> {
+    try {
+      await apiClient.put(`/tickets/${id}/assignee`, assignData);
+      return true;
+    } catch (error) {
+      console.error(`Failed to assign ticket ${id}:`, error);
+      return false;
+    }
   }
 
-  static async updateTicket(id: number, updateData: UpdateTicketDto): Promise<void> {
-    await apiClient.put(`/tickets/${id}`, updateData);
+  static async updateTicket(id: number, updateData: UpdateTicketDto): Promise<boolean> {
+    try {
+      await apiClient.put(`/tickets/${id}`, updateData);
+      return true;
+    } catch (error) {
+      console.error(`Failed to update ticket ${id}:`, error);
+      return false;
+    }
   }
 
   // Users
   static async getUsers(): Promise<UserDto[]> {
-    const response = await apiClient.get<UserDto[]>('/users');
-    return response.data;
+    try {
+      const response = await apiClient.get<UserDto[]>('/users');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      // Return empty array as fallback
+      return [];
+    }
   }
 
-  static async getUser(id: number): Promise<UserDto> {
-    const response = await apiClient.get<UserDto>(`/users/${id}`);
-    return response.data;
+  static async getUser(id: number): Promise<UserDto | null> {
+    try {
+      const response = await apiClient.get<UserDto>(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch user ${id}:`, error);
+      return null;
+    }
   }
 
   // Engineers for swim lanes
   static async getEngineers(): Promise<UserDto[]> {
-    const users = await this.getUsers();
-    return users.filter((user) => user.role === 2 && user.isActive); // Engineer role = 2
+    try {
+      const users = await this.getUsers();
+      return users.filter((user) => user.role === 2 && user.isActive); // Engineer role = 2
+    } catch (error) {
+      console.error('Failed to fetch engineers:', error);
+      return [];
+    }
   }
 }
 
