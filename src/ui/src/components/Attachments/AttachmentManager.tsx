@@ -5,7 +5,6 @@ import {
   tokens,
   Button,
   Text,
-  Badge,
   MessageBar,
   MessageBarBody,
   Spinner,
@@ -147,7 +146,7 @@ const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       } else {
         setError('Failed to upload file. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to upload file. Please try again.');
     } finally {
       setIsUploading(false);

@@ -14,7 +14,6 @@ import {
   Text,
 } from '@fluentui/react-components';
 import {
-  DismissRegular,
   DocumentRegular,
   ImageRegular,
   VideoRegular,
@@ -120,8 +119,6 @@ const FilePreview: React.FC<FilePreviewProps> = ({ attachment, trigger }) => {
   };
 
   const downloadUrl = ApiService.getAttachmentDownloadUrl(attachment.id);
-
-  const canPreview = isImage || isVideo || isAudio || isText || isPdf;
 
   const renderPreview = () => {
     if (isImage) {

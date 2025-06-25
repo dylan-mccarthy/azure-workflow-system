@@ -3,9 +3,11 @@ using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
 using AzureWorkflowSystem.Api.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -587,5 +589,239 @@ public class AttachmentsControllerTests
         Assert.Contains(ticket.Id.ToString(), auditLog.Details);
         Assert.Equal(ticket.Id, auditLog.TicketId);
         Assert.Equal(1, auditLog.UserId); // Admin user ID
+    }
+
+    [Fact]
+    public async Task UploadAttachment_WithValidFile_ReturnsCreatedAttachment()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var mockBlobService = new Mock<IBlobStorageService>();
+        var expectedBlobUrl = "https://test.blob.core.windows.net/attachments/guid_test.pdf";
+        mockBlobService.Setup(b => b.UploadFileAsync(It.IsAny<Stream>(), "test.pdf", "application/pdf"))
+            .ReturnsAsync(expectedBlobUrl);
+
+        var controller = new AttachmentsController(context, Mock.Of<ILogger<AttachmentsController>>(), mockBlobService.Object);
+
+        // Create a mock file
+        var content = "Test file content";
+        var fileName = "test.pdf";
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+        var formFile = new FormFile(stream, 0, stream.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/pdf"
+        };
+
+        // Act
+        var result = await controller.UploadAttachment(ticket.Id, formFile);
+
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        var attachmentDto = Assert.IsType<AttachmentDto>(createdResult.Value);
+        Assert.Equal(fileName, attachmentDto.FileName);
+        Assert.Equal("application/pdf", attachmentDto.ContentType);
+        Assert.Equal(stream.Length, attachmentDto.FileSizeBytes);
+        Assert.Equal(expectedBlobUrl, attachmentDto.BlobUrl);
+        Assert.Equal(ticket.Id, attachmentDto.TicketId);
+
+        // Verify blob service was called
+        mockBlobService.Verify(b => b.UploadFileAsync(It.IsAny<Stream>(), fileName, "application/pdf"), Times.Once);
+    }
+
+    [Fact]
+    public async Task UploadAttachment_WithOversizedFile_Returns413()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var controller = GetController(context);
+
+        // Create a mock file that exceeds 100MB
+        var maxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
+        var oversizedContent = new byte[maxFileSizeBytes + 1]; // 1 byte over limit
+        var fileName = "oversized.pdf";
+        var stream = new MemoryStream(oversizedContent);
+        var formFile = new FormFile(stream, 0, stream.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/pdf"
+        };
+
+        // Act
+        var result = await controller.UploadAttachment(ticket.Id, formFile);
+
+        // Assert
+        var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(413, statusCodeResult.StatusCode);
+        Assert.Equal("File size exceeds 100 MB limit", statusCodeResult.Value);
+    }
+
+    [Fact]
+    public async Task UploadAttachment_WithInvalidTicket_ReturnsNotFound()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var controller = GetController(context);
+
+        var content = "Test file content";
+        var fileName = "test.pdf";
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+        var formFile = new FormFile(stream, 0, stream.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/pdf"
+        };
+
+        // Act
+        var result = await controller.UploadAttachment(999, formFile);
+
+        // Assert
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.Equal("Ticket not found", notFoundResult.Value);
+    }
+
+    [Fact]
+    public async Task UploadAttachment_CreatesAuditLogEntry()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var mockBlobService = new Mock<IBlobStorageService>();
+        var expectedBlobUrl = "https://test.blob.core.windows.net/attachments/guid_audit-test.pdf";
+        mockBlobService.Setup(b => b.UploadFileAsync(It.IsAny<Stream>(), "audit-test.pdf", "application/pdf"))
+            .ReturnsAsync(expectedBlobUrl);
+
+        var controller = new AttachmentsController(context, Mock.Of<ILogger<AttachmentsController>>(), mockBlobService.Object);
+
+        var content = "Test audit content";
+        var fileName = "audit-test.pdf";
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+        var formFile = new FormFile(stream, 0, stream.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/pdf"
+        };
+
+        // Act
+        var result = await controller.UploadAttachment(ticket.Id, formFile);
+
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        Assert.NotNull(createdResult.Value);
+
+        // Verify audit log entry was created
+        var auditLog = await context.AuditLogs
+            .Where(a => a.Action == "ATTACHMENT_UPLOADED" && a.TicketId == ticket.Id)
+            .FirstOrDefaultAsync();
+
+        Assert.NotNull(auditLog);
+        Assert.Equal("ATTACHMENT_UPLOADED", auditLog.Action);
+        Assert.Contains(fileName, auditLog.Details);
+        Assert.Contains(ticket.Id.ToString(), auditLog.Details);
+        Assert.Contains($"{stream.Length} bytes", auditLog.Details);
+        Assert.Equal(ticket.Id, auditLog.TicketId);
+        Assert.Equal(1, auditLog.UserId);
+    }
+
+    [Fact]
+    public async Task DownloadAttachment_WithValidId_ReturnsFileStream()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var attachment = new Attachment
+        {
+            FileName = "download-test.pdf",
+            ContentType = "application/pdf",
+            FileSizeBytes = 1024,
+            BlobUrl = "https://test.blob.core.windows.net/attachments/download-test.pdf",
+            TicketId = ticket.Id,
+            UploadedById = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        context.Attachments.Add(attachment);
+        await context.SaveChangesAsync();
+
+        var mockBlobService = new Mock<IBlobStorageService>();
+        var fileContent = "Test download content";
+        var fileStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(fileContent));
+        mockBlobService.Setup(b => b.DownloadFileAsync(attachment.BlobUrl))
+            .ReturnsAsync(fileStream);
+
+        var controller = new AttachmentsController(context, Mock.Of<ILogger<AttachmentsController>>(), mockBlobService.Object);
+
+        // Act
+        var result = await controller.DownloadAttachment(attachment.Id);
+
+        // Assert
+        var fileResult = Assert.IsType<FileStreamResult>(result);
+        Assert.Equal("application/pdf", fileResult.ContentType);
+        Assert.Equal("download-test.pdf", fileResult.FileDownloadName);
+        Assert.NotNull(fileResult.FileStream);
+
+        // Verify blob service was called
+        mockBlobService.Verify(b => b.DownloadFileAsync(attachment.BlobUrl), Times.Once);
+    }
+
+    [Fact]
+    public async Task DownloadAttachment_WithInvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var controller = GetController(context);
+
+        // Act
+        var result = await controller.DownloadAttachment(999);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task DownloadAttachment_WithBlobServiceException_ReturnsServerError()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+        var ticket = await CreateTestTicket(context, user);
+
+        var attachment = new Attachment
+        {
+            FileName = "error-test.pdf",
+            ContentType = "application/pdf",
+            FileSizeBytes = 1024,
+            BlobUrl = "https://test.blob.core.windows.net/attachments/error-test.pdf",
+            TicketId = ticket.Id,
+            UploadedById = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        context.Attachments.Add(attachment);
+        await context.SaveChangesAsync();
+
+        var mockBlobService = new Mock<IBlobStorageService>();
+        mockBlobService.Setup(b => b.DownloadFileAsync(attachment.BlobUrl))
+            .ThrowsAsync(new Exception("Blob service error"));
+
+        var controller = new AttachmentsController(context, Mock.Of<ILogger<AttachmentsController>>(), mockBlobService.Object);
+
+        // Act
+        var result = await controller.DownloadAttachment(attachment.Id);
+
+        // Assert
+        var statusCodeResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, statusCodeResult.StatusCode);
+        Assert.Equal("Failed to download file", statusCodeResult.Value);
     }
 }

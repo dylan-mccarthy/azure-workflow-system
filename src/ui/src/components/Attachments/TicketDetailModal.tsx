@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   makeStyles,
   shorthands,
-  tokens,
   Dialog,
   DialogTrigger,
   DialogSurface,
@@ -19,7 +18,6 @@ import {
   Spinner,
 } from '@fluentui/react-components';
 import {
-  DismissRegular,
   PersonRegular,
   CalendarRegular,
 } from '@fluentui/react-icons';
@@ -83,13 +81,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
   const [attachments, setAttachments] = useState<AttachmentDto[]>([]);
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadAttachments();
-    }
-  }, [isOpen, ticket.id]);
-
-  const loadAttachments = async () => {
+  const loadAttachments = useCallback(async () => {
     setIsLoadingAttachments(true);
     try {
       const ticketAttachments = await ApiService.getTicketAttachments(ticket.id);
@@ -99,7 +91,13 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ ticket, trigger }
     } finally {
       setIsLoadingAttachments(false);
     }
-  };
+  }, [ticket.id]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadAttachments();
+    }
+  }, [isOpen, loadAttachments]);
 
   const getPriorityColor = (priority: number) => {
     switch (priority) {
