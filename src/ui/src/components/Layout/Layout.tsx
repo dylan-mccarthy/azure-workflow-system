@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { makeStyles, shorthands, tokens, Title1, Body1, Spinner } from '@fluentui/react-components';
 import {
   GridKanbanRegular,
@@ -73,13 +74,19 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const styles = useStyles();
   const { currentUser, isLoading } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navItems = [
-    { icon: <GridKanbanRegular />, label: 'Kanban Board', path: '/kanban', active: true },
-    { icon: <DocumentRegular />, label: 'All Tickets', path: '/tickets' },
-    { icon: <PersonRegular />, label: 'My Tickets', path: '/my-tickets' },
-    { icon: <SettingsRegular />, label: 'Settings', path: '/settings' },
+    { icon: <GridKanbanRegular />, label: 'Kanban Board', path: '/kanban', active: location.pathname === '/kanban' || location.pathname === '/' },
+    { icon: <DocumentRegular />, label: 'Reports', path: '/reports', active: location.pathname === '/reports' },
+    { icon: <PersonRegular />, label: 'My Tickets', path: '/my-tickets', active: location.pathname === '/my-tickets' },
+    { icon: <SettingsRegular />, label: 'Settings', path: '/settings', active: location.pathname === '/settings' },
   ];
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <div className={styles.container}>
@@ -102,6 +109,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div
               key={item.path}
               className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
+              onClick={() => handleNavigation(item.path)}
             >
               {item.icon}
               <Body1>{item.label}</Body1>

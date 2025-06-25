@@ -3,6 +3,7 @@ import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { UserProvider } from './contexts/UserContext';
 import Layout from './components/Layout/Layout';
 import KanbanPage from './pages/KanbanPage';
+import ReportsPage from './pages/ReportsPage';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <Routes>
               <Route path="/" element={<KanbanPage />} />
               <Route path="/kanban" element={<KanbanPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
             </Routes>
           </Layout>
         </Router>
