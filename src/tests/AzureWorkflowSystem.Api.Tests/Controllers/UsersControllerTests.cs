@@ -64,9 +64,10 @@ public class UsersControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var users = Assert.IsAssignableFrom<List<UserDto>>(okResult.Value);
-        Assert.Equal(2, users.Count);
+        Assert.Equal(3, users.Count); // 2 test users + 1 seeded admin user
         Assert.Contains(users, u => u.Email == "user1@test.com");
         Assert.Contains(users, u => u.Email == "user2@test.com");
+        Assert.Contains(users, u => u.Email == "admin@azureworkflow.com"); // Seeded admin user
     }
 
     [Fact]
