@@ -1,12 +1,5 @@
 import React, { ReactNode } from 'react';
-import {
-  makeStyles,
-  shorthands,
-  tokens,
-  Title1,
-  Body1,
-  Spinner,
-} from '@fluentui/react-components';
+import { makeStyles, shorthands, tokens, Title1, Body1, Spinner } from '@fluentui/react-components';
 import {
   GridKanbanRegular,
   PersonRegular,
@@ -91,22 +84,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Title1 className={styles.headerTitle}>
-          Azure Workflow System
-        </Title1>
+        <Title1 className={styles.headerTitle}>Azure Workflow System</Title1>
         {isLoading ? (
           <Spinner size="small" />
         ) : (
           <Body1>
-            {currentUser ? (
-              `${currentUser.firstName} ${currentUser.lastName} (${getRoleLabel(currentUser.role)})`
-            ) : (
-              'Welcome, User'
-            )}
+            {currentUser
+              ? `${currentUser.firstName} ${currentUser.lastName} (${getRoleLabel(currentUser.role)})`
+              : 'Welcome, User'}
           </Body1>
         )}
       </header>
-      
+
       <main className={styles.main}>
         <nav className={styles.sidebar}>
           {navItems.map((item) => (
@@ -119,10 +108,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           ))}
         </nav>
-        
-        <div className={styles.content}>
-          {children}
-        </div>
+
+        <div className={styles.content}>{children}</div>
       </main>
     </div>
   );

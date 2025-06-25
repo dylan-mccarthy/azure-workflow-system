@@ -58,17 +58,13 @@ const mockTicket: TicketDto = {
 };
 
 const renderWithProvider = (component: React.ReactElement) => {
-  return render(
-    <FluentProvider theme={webLightTheme}>
-      {component}
-    </FluentProvider>
-  );
+  return render(<FluentProvider theme={webLightTheme}>{component}</FluentProvider>);
 };
 
 describe('TicketCard', () => {
   it('renders ticket information correctly', () => {
     renderWithProvider(<TicketCard ticket={mockTicket} />);
-    
+
     expect(screen.getByText('Test Ticket')).toBeInTheDocument();
     expect(screen.getByText('Test description')).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
@@ -81,13 +77,13 @@ describe('TicketCard', () => {
   it('shows unassigned when no assignee', () => {
     const unassignedTicket = { ...mockTicket, assignedTo: undefined };
     renderWithProvider(<TicketCard ticket={unassignedTicket} />);
-    
+
     expect(screen.getByText('Unassigned')).toBeInTheDocument();
   });
 
   it('applies priority styling correctly', () => {
     renderWithProvider(<TicketCard ticket={mockTicket} />);
-    
+
     const priorityBadge = screen.getByText('Medium');
     expect(priorityBadge).toBeInTheDocument();
   });

@@ -3,7 +3,7 @@ import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { UserProvider } from './contexts/UserContext';
 import Layout from './components/Layout/Layout';
 import KanbanPage from './pages/KanbanPage';
-import './App.css'
+import './App.css';
 
 function App() {
   return (

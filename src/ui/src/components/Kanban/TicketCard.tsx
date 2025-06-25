@@ -16,12 +16,12 @@ import {
   CalendarRegular,
   ReOrderDotsVerticalRegular,
 } from '@fluentui/react-icons';
-import { 
-  TicketDto, 
-  TicketPriority, 
-  getStatusLabel, 
-  getPriorityLabel, 
-  getCategoryLabel 
+import {
+  TicketDto,
+  TicketPriority,
+  getStatusLabel,
+  getPriorityLabel,
+  getCategoryLabel,
 } from '../../types/api';
 
 const useStyles = makeStyles({
@@ -134,7 +134,7 @@ interface TicketCardProps {
 
 const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) => {
   const styles = useStyles();
-  
+
   const {
     attributes,
     listeners,
@@ -182,7 +182,7 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
       style={style}
       className={mergeClasses(
         styles.card,
-        (isDragging || isSortableDragging) && styles.cardDragging
+        (isDragging || isSortableDragging) && styles.cardDragging,
       )}
       aria-label={`Ticket ${ticket.id}: ${ticket.title}. Priority: ${getPriorityLabel(ticket.priority)}. Status: ${getStatusLabel(ticket.status)}. ${ticket.assignedTo ? `Assigned to ${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName}` : 'Unassigned'}`}
       {...attributes}
@@ -192,48 +192,33 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
         <Body2 className={styles.ticketId}>#{ticket.id}</Body2>
         <ReOrderDotsVerticalRegular className={styles.dragHandle} />
       </div>
-      
-      <Title3 className={styles.ticketTitle}>
-        {ticket.title}
-      </Title3>
-      
+
+      <Title3 className={styles.ticketTitle}>{ticket.title}</Title3>
+
       {ticket.description && (
-        <Body2 className={styles.ticketDescription}>
-          {ticket.description}
-        </Body2>
+        <Body2 className={styles.ticketDescription}>{ticket.description}</Body2>
       )}
-      
+
       <div className={styles.badges}>
-        <Badge 
-          appearance="filled" 
-          className={getPriorityBadgeStyle(ticket.priority)}
-        >
+        <Badge appearance="filled" className={getPriorityBadgeStyle(ticket.priority)}>
           {getPriorityLabel(ticket.priority)}
         </Badge>
-        <Badge appearance="outline">
-          {getStatusLabel(ticket.status)}
-        </Badge>
-        <Badge appearance="outline">
-          {getCategoryLabel(ticket.category)}
-        </Badge>
+        <Badge appearance="outline">{getStatusLabel(ticket.status)}</Badge>
+        <Badge appearance="outline">{getCategoryLabel(ticket.category)}</Badge>
       </div>
-      
+
       <div className={styles.footer}>
         <div className={styles.assignee}>
           <PersonRegular />
           <span>
-            {ticket.assignedTo 
+            {ticket.assignedTo
               ? `${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName}`
-              : 'Unassigned'
-            }
+              : 'Unassigned'}
           </span>
         </div>
-        
+
         {ticket.slaTargetDate && (
-          <div className={mergeClasses(
-            styles.slaInfo,
-            ticket.isSlaBreach && styles.slaBreach
-          )}>
+          <div className={mergeClasses(styles.slaInfo, ticket.isSlaBreach && styles.slaBreach)}>
             <CalendarRegular />
             <span>{formatDate(ticket.slaTargetDate)}</span>
             {ticket.isSlaBreach && <AlertRegular />}

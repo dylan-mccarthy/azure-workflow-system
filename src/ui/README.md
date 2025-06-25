@@ -19,7 +19,7 @@ This directory contains the frontend web application for the Azure Platform Supp
 - **React 19** with TypeScript for type safety
 - **Vite** for fast development and build tooling
 - **Fluent UI v9** for Microsoft design system components
-- **@dnd-kit** for accessible drag-and-drop functionality  
+- **@dnd-kit** for accessible drag-and-drop functionality
 - **React Router** for navigation
 - **Axios** for API communication
 - **Azure Authentication Library for React** (planned for MSAL integration)
@@ -28,10 +28,12 @@ This directory contains the frontend web application for the Azure Platform Supp
 ## Local Development
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm 8+
 
 ### Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -53,9 +55,11 @@ npm run lint
 ```
 
 ### Development Server
+
 The development server runs on `http://localhost:5173` by default.
 
 ### API Configuration
+
 The UI expects the API to be running at `https://localhost:7000/api` by default. This can be configured via the `VITE_API_BASE_URL` environment variable.
 
 ## Pages
@@ -82,14 +86,18 @@ The UI follows a modern React component architecture:
 ## Key Components
 
 ### KanbanBoard
+
 Main kanban interface with drag-and-drop swim lanes:
+
 - Displays tickets in columns by assignee (Unassigned + Engineer columns)
 - Supports drag-and-drop for ticket assignment
 - Calls `PUT /api/tickets/{id}/assignee` when tickets are moved
 - Updates ticket status automatically when assigned
 
-### TicketCard  
+### TicketCard
+
 Rich ticket display component:
+
 - Shows ticket ID, title, description, priority, status, category
 - Color-coded priority badges
 - SLA target date with breach indicators
@@ -97,7 +105,9 @@ Rich ticket display component:
 - Accessible with proper ARIA labels and keyboard support
 
 ### Layout
+
 Application shell with:
+
 - Navigation sidebar with role-based menu items
 - Header with user information and role display
 - Responsive design that adapts to screen size
@@ -105,12 +115,14 @@ Application shell with:
 ## Role-Based Access
 
 The application supports role-based views:
+
 - **Viewer** - Read-only access
 - **Engineer** - Can view tickets, limited assignment
-- **Manager** - Can assign tickets and manage workflow  
+- **Manager** - Can assign tickets and manage workflow
 - **Admin** - Full system access
 
 Permission checks are handled via the `UserContext`:
+
 - `canAssignTickets()` - Managers and Admins only
 - `canViewAllTickets()` - All roles except Viewer
 - `hasRole(role)` - Check specific role
@@ -118,6 +130,7 @@ Permission checks are handled via the `UserContext`:
 ## API Integration
 
 The `ApiService` class provides typed methods for:
+
 - `getTickets(params?)` - Fetch tickets with optional filtering
 - `getUsers()` - Fetch all users
 - `getEngineers()` - Fetch active engineers for swim lanes
@@ -127,11 +140,13 @@ The `ApiService` class provides typed methods for:
 ## Testing
 
 The project includes:
+
 - **Unit tests** for individual components using Vitest + Testing Library
 - **API service tests** with mocked HTTP calls
 - **Accessibility testing** via Testing Library's built-in a11y checks
 
 Run tests with:
+
 ```bash
 npm run test          # Watch mode
 npm run test:run      # Single run
@@ -144,7 +159,7 @@ npm run test:ui       # UI mode (if installed)
 # Production build
 npm run build
 
-# Preview production build locally  
+# Preview production build locally
 npm run preview
 ```
 

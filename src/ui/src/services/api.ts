@@ -1,5 +1,13 @@
 import axios from 'axios';
-import { TicketDto, UserDto, AssignTicketDto, UpdateTicketDto, TicketStatus, TicketPriority, TicketCategory } from '../types/api';
+import {
+  TicketDto,
+  UserDto,
+  AssignTicketDto,
+  UpdateTicketDto,
+  TicketStatus,
+  TicketPriority,
+  TicketCategory,
+} from '../types/api';
 
 // API base URL - this would typically come from environment variables
 const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://localhost:7000/api';
@@ -63,7 +71,7 @@ export class ApiService {
   // Engineers for swim lanes
   static async getEngineers(): Promise<UserDto[]> {
     const users = await this.getUsers();
-    return users.filter(user => user.role === 2 && user.isActive); // Engineer role = 2
+    return users.filter((user) => user.role === 2 && user.isActive); // Engineer role = 2
   }
 }
 

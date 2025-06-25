@@ -29,8 +29,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       try {
         setIsLoading(true);
         // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         // Mock current user - in real app this would come from authentication
         const mockUser: UserDto = {
           id: 999,
@@ -42,7 +42,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        
+
         setCurrentUser(mockUser);
       } catch {
         setError('Failed to load user information');
@@ -75,11 +75,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     canViewAllTickets,
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useUser = (): UserContextType => {

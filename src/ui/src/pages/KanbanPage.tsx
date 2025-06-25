@@ -44,17 +44,17 @@ const KanbanPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         if (!canViewAllTickets()) {
           setError('You do not have permission to view tickets.');
           return;
         }
-        
+
         const [ticketsData, engineersData] = await Promise.all([
           ApiService.getTickets(),
           ApiService.getEngineers(),
         ]);
-        
+
         setTickets(ticketsData);
         setEngineers(engineersData);
       } catch (err) {
@@ -78,22 +78,22 @@ const KanbanPage: React.FC = () => {
       if (newAssigneeId !== undefined) {
         // Assign the ticket
         await ApiService.assignTicket(ticketId, { assignedToId: newAssigneeId });
-        
+
         // Update local state - ticket assignment
-        setTickets(prevTickets =>
-          prevTickets.map(ticket =>
+        setTickets((prevTickets) =>
+          prevTickets.map((ticket) =>
             ticket.id === ticketId
               ? {
                   ...ticket,
-                  assignedTo: newAssigneeId 
-                    ? engineers.find(eng => eng.id === newAssigneeId) 
+                  assignedTo: newAssigneeId
+                    ? engineers.find((eng) => eng.id === newAssigneeId)
                     : undefined,
                   status: newAssigneeId ? TicketStatus.Assigned : TicketStatus.New,
                 }
-              : ticket
-          )
+              : ticket,
+          ),
         );
-        
+
         // Clear any previous errors
         setError(null);
       }
@@ -129,12 +129,8 @@ const KanbanPage: React.FC = () => {
       <div className={styles.header}>
         <Title2>Kanban Board</Title2>
       </div>
-      
-      <KanbanBoard
-        tickets={tickets}
-        engineers={engineers}
-        onTicketMove={handleTicketMove}
-      />
+
+      <KanbanBoard tickets={tickets} engineers={engineers} onTicketMove={handleTicketMove} />
     </div>
   );
 };

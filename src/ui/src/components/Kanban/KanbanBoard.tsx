@@ -10,16 +10,9 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
-import {
-  restrictToWindowEdges,
-} from '@dnd-kit/modifiers';
-import {
-  makeStyles,
-  shorthands,
-} from '@fluentui/react-components';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { makeStyles, shorthands } from '@fluentui/react-components';
 import { TicketDto, UserDto, TicketStatus } from '../../types/api';
 import KanbanColumn from './KanbanColumn';
 import TicketCard from './TicketCard';
@@ -40,11 +33,7 @@ interface KanbanBoardProps {
   onTicketMove: (ticketId: number, newAssigneeId?: number) => Promise<void>;
 }
 
-const KanbanBoard: React.FC<KanbanBoardProps> = ({
-  tickets,
-  engineers,
-  onTicketMove,
-}) => {
+const KanbanBoard: React.FC<KanbanBoardProps> = ({ tickets, engineers, onTicketMove }) => {
   const styles = useStyles();
   const [activeTicket, setActiveTicket] = React.useState<TicketDto | null>(null);
 
@@ -52,7 +41,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Create columns: Unassigned + Engineer columns
@@ -60,22 +49,23 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     {
       id: 'unassigned',
       title: 'Unassigned',
-      tickets: tickets.filter(ticket => !ticket.assignedTo && ticket.status !== TicketStatus.Closed),
+      tickets: tickets.filter(
+        (ticket) => !ticket.assignedTo && ticket.status !== TicketStatus.Closed,
+      ),
     },
-    ...engineers.map(engineer => ({
+    ...engineers.map((engineer) => ({
       id: `engineer-${engineer.id}`,
       title: `${engineer.firstName} ${engineer.lastName}`,
       engineerId: engineer.id,
-      tickets: tickets.filter(ticket => 
-        ticket.assignedTo?.id === engineer.id && 
-        ticket.status !== TicketStatus.Closed
+      tickets: tickets.filter(
+        (ticket) => ticket.assignedTo?.id === engineer.id && ticket.status !== TicketStatus.Closed,
       ),
     })),
   ];
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const ticket = tickets.find(t => t.id === Number(active.id));
+    const ticket = tickets.find((t) => t.id === Number(active.id));
     setActiveTicket(ticket || null);
   };
 
@@ -97,7 +87,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
 
     // Find current ticket
-    const currentTicket = tickets.find(t => t.id === ticketId);
+    const currentTicket = tickets.find((t) => t.id === ticketId);
     if (!currentTicket) return;
 
     // Check if assignment actually changed

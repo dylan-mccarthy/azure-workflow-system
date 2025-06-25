@@ -1,9 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import {
   makeStyles,
   shorthands,
@@ -83,7 +80,7 @@ interface KanbanColumnProps {
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tickets }) => {
   const styles = useStyles();
-  
+
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -92,33 +89,27 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tickets }) => {
     <div className={styles.column}>
       <div className={styles.columnHeader}>
         <Title3 className={styles.columnTitle}>{title}</Title3>
-        <div className={styles.ticketCount}>
-          {tickets.length}
-        </div>
+        <div className={styles.ticketCount}>{tickets.length}</div>
       </div>
-      
-      <div 
+
+      <div
         ref={setNodeRef}
         className={mergeClasses(
           styles.columnContent,
           styles.dropZone,
-          isOver && styles.dropZoneActive
+          isOver && styles.dropZoneActive,
         )}
         role="region"
         aria-label={`${title} swim lane with ${tickets.length} tickets`}
       >
         <SortableContext
-          items={tickets.map(ticket => ticket.id)}
+          items={tickets.map((ticket) => ticket.id)}
           strategy={verticalListSortingStrategy}
         >
           {tickets.length === 0 ? (
-            <Body2 className={styles.emptyMessage}>
-              No tickets
-            </Body2>
+            <Body2 className={styles.emptyMessage}>No tickets</Body2>
           ) : (
-            tickets.map((ticket) => (
-              <TicketCard key={ticket.id} ticket={ticket} />
-            ))
+            tickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)
           )}
         </SortableContext>
       </div>
