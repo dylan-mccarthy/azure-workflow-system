@@ -1,43 +1,69 @@
-# Frontend UI
+# React + TypeScript + Vite
 
-This directory contains the frontend web application for the Azure Platform Support Workflow Management System.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
+Currently, two official plugins are available:
 
-- Kanban board with swim lanes for ticket management
-- Ticket creation and management interface
-- SLA countdown visualization
-- Role-based dashboards and views
-- Reporting and analytics dashboard
-- File attachment upload and download
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Technology Stack
+## Expanding the ESLint configuration
 
-- React with TypeScript
-- Fluent UI for Microsoft design system components
-- React Query for data fetching
-- React Router for navigation
-- Azure Authentication Library for React
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Local Development
+```js
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-TBD: Instructions for local development setup
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
 
-## Pages
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
 
-- Dashboard - Overview of open tickets and SLA status
-- Kanban Board - Ticket management with swim lanes
-- Ticket Detail - Individual ticket view and edit
-- Reports - MTTA, MTTR, and other metrics
-- Administration - User, role, and SLA configuration
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-## Architecture
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-The UI follows a modern React component architecture:
-
-- Components (Reusable UI elements)
-- Pages (Screen layouts)
-- Hooks (Shared logic)
-- Services (API integration)
-- Context (State management)
-- Types (TypeScript definitions)
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
