@@ -57,6 +57,8 @@ export interface TicketDto {
   assignedTo?: UserDto;
   slaTargetDate?: string;
   isSlaBreach: boolean;
+  isImminentSlaBreach: boolean;
+  slaRemainingMinutes?: number;
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
@@ -66,6 +68,31 @@ export interface TicketDto {
 
 export interface AssignTicketDto {
   assignedToId?: number;
+}
+
+export interface SlaConfigurationDto {
+  id: number;
+  priority: TicketPriority;
+  category: TicketCategory;
+  responseTimeMinutes: number;
+  resolutionTimeMinutes: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSlaConfigurationDto {
+  priority: TicketPriority;
+  category: TicketCategory;
+  responseTimeMinutes: number;
+  resolutionTimeMinutes: number;
+  isActive?: boolean;
+}
+
+export interface UpdateSlaConfigurationDto {
+  responseTimeMinutes?: number;
+  resolutionTimeMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface UpdateTicketDto {

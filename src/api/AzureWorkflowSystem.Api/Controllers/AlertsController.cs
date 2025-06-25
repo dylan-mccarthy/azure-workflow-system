@@ -1,6 +1,7 @@
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,13 @@ public class AlertsController : ControllerBase
 {
     private readonly WorkflowDbContext _context;
     private readonly ILogger<AlertsController> _logger;
+    private readonly ISlaService _slaService;
 
-    public AlertsController(WorkflowDbContext context, ILogger<AlertsController> logger)
+    public AlertsController(WorkflowDbContext context, ILogger<AlertsController> logger, ISlaService slaService)
     {
         _context = context;
         _logger = logger;
+        _slaService = slaService;
     }
 
     /// <summary>
@@ -66,7 +69,7 @@ public class AlertsController : ControllerBase
             };
 
             // Calculate SLA target date
-            await CalculateSlaTargetDate(ticket);
+            await _slaService.CalculateSlaTargetDate(ticket);
 
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();
@@ -155,19 +158,5 @@ public class AlertsController : ControllerBase
     private static string? GetPrimaryResourceId(string[] targetResources)
     {
         return targetResources?.FirstOrDefault();
-    }
-
-    private async Task CalculateSlaTargetDate(Ticket ticket)
-    {
-        var slaConfig = await _context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
-                                    s.IsActive);
-
-        if (slaConfig != null)
-        {
-            ticket.SlaTargetDate = ticket.CreatedAt.AddMinutes(slaConfig.ResolutionTimeMinutes);
-            ticket.IsSlaBreach = ticket.SlaTargetDate < DateTime.UtcNow;
-        }
     }
 }

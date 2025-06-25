@@ -1,6 +1,7 @@
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ public class TicketsController : ControllerBase
 {
     private readonly WorkflowDbContext _context;
     private readonly ILogger<TicketsController> _logger;
+    private readonly ISlaService _slaService;
 
-    public TicketsController(WorkflowDbContext context, ILogger<TicketsController> logger)
+    public TicketsController(WorkflowDbContext context, ILogger<TicketsController> logger, ISlaService slaService)
     {
         _context = context;
         _logger = logger;
+        _slaService = slaService;
     }
 
     /// <summary>
@@ -49,51 +52,18 @@ public class TicketsController : ControllerBase
         if (assignedToId.HasValue)
             query = query.Where(t => t.AssignedToId == assignedToId.Value);
 
-        var tickets = await query
-            .Select(t => new TicketDto
-            {
-                Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
-                Status = t.Status,
-                Priority = t.Priority,
-                Category = t.Category,
-                AzureResourceId = t.AzureResourceId,
-                AlertId = t.AlertId,
-                CreatedBy = new UserDto
-                {
-                    Id = t.CreatedBy.Id,
-                    Email = t.CreatedBy.Email,
-                    FirstName = t.CreatedBy.FirstName,
-                    LastName = t.CreatedBy.LastName,
-                    Role = t.CreatedBy.Role,
-                    IsActive = t.CreatedBy.IsActive,
-                    CreatedAt = t.CreatedBy.CreatedAt,
-                    UpdatedAt = t.CreatedBy.UpdatedAt
-                },
-                AssignedTo = t.AssignedTo == null ? null : new UserDto
-                {
-                    Id = t.AssignedTo.Id,
-                    Email = t.AssignedTo.Email,
-                    FirstName = t.AssignedTo.FirstName,
-                    LastName = t.AssignedTo.LastName,
-                    Role = t.AssignedTo.Role,
-                    IsActive = t.AssignedTo.IsActive,
-                    CreatedAt = t.AssignedTo.CreatedAt,
-                    UpdatedAt = t.AssignedTo.UpdatedAt
-                },
-                SlaTargetDate = t.SlaTargetDate,
-                IsSlaBreach = t.IsSlaBreach,
-                CreatedAt = t.CreatedAt,
-                UpdatedAt = t.UpdatedAt,
-                ResolvedAt = t.ResolvedAt,
-                ClosedAt = t.ClosedAt,
-                AttachmentCount = t.Attachments.Count
-            })
+        var ticketEntities = await query
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
 
-        return Ok(tickets);
+        var ticketDtos = new List<TicketDto>();
+        foreach (var ticket in ticketEntities)
+        {
+            var ticketDto = await MapToTicketDto(ticket);
+            ticketDtos.Add(ticketDto);
+        }
+
+        return Ok(ticketDtos);
     }
 
     /// <summary>
@@ -113,47 +83,7 @@ public class TicketsController : ControllerBase
             return NotFound();
         }
 
-        var ticketDto = new TicketDto
-        {
-            Id = ticket.Id,
-            Title = ticket.Title,
-            Description = ticket.Description,
-            Status = ticket.Status,
-            Priority = ticket.Priority,
-            Category = ticket.Category,
-            AzureResourceId = ticket.AzureResourceId,
-            AlertId = ticket.AlertId,
-            CreatedBy = new UserDto
-            {
-                Id = ticket.CreatedBy.Id,
-                Email = ticket.CreatedBy.Email,
-                FirstName = ticket.CreatedBy.FirstName,
-                LastName = ticket.CreatedBy.LastName,
-                Role = ticket.CreatedBy.Role,
-                IsActive = ticket.CreatedBy.IsActive,
-                CreatedAt = ticket.CreatedBy.CreatedAt,
-                UpdatedAt = ticket.CreatedBy.UpdatedAt
-            },
-            AssignedTo = ticket.AssignedTo == null ? null : new UserDto
-            {
-                Id = ticket.AssignedTo.Id,
-                Email = ticket.AssignedTo.Email,
-                FirstName = ticket.AssignedTo.FirstName,
-                LastName = ticket.AssignedTo.LastName,
-                Role = ticket.AssignedTo.Role,
-                IsActive = ticket.AssignedTo.IsActive,
-                CreatedAt = ticket.AssignedTo.CreatedAt,
-                UpdatedAt = ticket.AssignedTo.UpdatedAt
-            },
-            SlaTargetDate = ticket.SlaTargetDate,
-            IsSlaBreach = ticket.IsSlaBreach,
-            CreatedAt = ticket.CreatedAt,
-            UpdatedAt = ticket.UpdatedAt,
-            ResolvedAt = ticket.ResolvedAt,
-            ClosedAt = ticket.ClosedAt,
-            AttachmentCount = ticket.Attachments.Count
-        };
-
+        var ticketDto = await MapToTicketDto(ticket);
         return Ok(ticketDto);
     }
 
@@ -183,7 +113,7 @@ public class TicketsController : ControllerBase
         };
 
         // Calculate SLA target date
-        await CalculateSlaTargetDate(ticket);
+        await _slaService.CalculateSlaTargetDate(ticket);
 
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
@@ -195,47 +125,7 @@ public class TicketsController : ControllerBase
             .Include(t => t.Attachments)
             .FirstAsync(t => t.Id == ticket.Id);
 
-        var ticketDto = new TicketDto
-        {
-            Id = createdTicket.Id,
-            Title = createdTicket.Title,
-            Description = createdTicket.Description,
-            Status = createdTicket.Status,
-            Priority = createdTicket.Priority,
-            Category = createdTicket.Category,
-            AzureResourceId = createdTicket.AzureResourceId,
-            AlertId = createdTicket.AlertId,
-            CreatedBy = new UserDto
-            {
-                Id = createdTicket.CreatedBy.Id,
-                Email = createdTicket.CreatedBy.Email,
-                FirstName = createdTicket.CreatedBy.FirstName,
-                LastName = createdTicket.CreatedBy.LastName,
-                Role = createdTicket.CreatedBy.Role,
-                IsActive = createdTicket.CreatedBy.IsActive,
-                CreatedAt = createdTicket.CreatedBy.CreatedAt,
-                UpdatedAt = createdTicket.CreatedBy.UpdatedAt
-            },
-            AssignedTo = createdTicket.AssignedTo == null ? null : new UserDto
-            {
-                Id = createdTicket.AssignedTo.Id,
-                Email = createdTicket.AssignedTo.Email,
-                FirstName = createdTicket.AssignedTo.FirstName,
-                LastName = createdTicket.AssignedTo.LastName,
-                Role = createdTicket.AssignedTo.Role,
-                IsActive = createdTicket.AssignedTo.IsActive,
-                CreatedAt = createdTicket.AssignedTo.CreatedAt,
-                UpdatedAt = createdTicket.AssignedTo.UpdatedAt
-            },
-            SlaTargetDate = createdTicket.SlaTargetDate,
-            IsSlaBreach = createdTicket.IsSlaBreach,
-            CreatedAt = createdTicket.CreatedAt,
-            UpdatedAt = createdTicket.UpdatedAt,
-            ResolvedAt = createdTicket.ResolvedAt,
-            ClosedAt = createdTicket.ClosedAt,
-            AttachmentCount = createdTicket.Attachments.Count
-        };
-
+        var ticketDto = await MapToTicketDto(createdTicket);
         return CreatedAtAction(nameof(GetTicket), new { id = ticket.Id }, ticketDto);
     }
 
@@ -272,14 +162,14 @@ public class TicketsController : ControllerBase
         {
             ticket.Priority = updateTicketDto.Priority.Value;
             // Recalculate SLA if priority changed
-            await CalculateSlaTargetDate(ticket);
+            await _slaService.CalculateSlaTargetDate(ticket);
         }
 
         if (updateTicketDto.Category.HasValue)
         {
             ticket.Category = updateTicketDto.Category.Value;
             // Recalculate SLA if category changed
-            await CalculateSlaTargetDate(ticket);
+            await _slaService.CalculateSlaTargetDate(ticket);
         }
 
         if (updateTicketDto.AzureResourceId != null)
@@ -366,17 +256,54 @@ public class TicketsController : ControllerBase
         return await _context.Tickets.AnyAsync(e => e.Id == id);
     }
 
-    private async Task CalculateSlaTargetDate(Ticket ticket)
+    private async Task<TicketDto> MapToTicketDto(Ticket ticket)
     {
-        var slaConfig = await _context.SlaConfigurations
-            .FirstOrDefaultAsync(s => s.Priority == ticket.Priority && 
-                                    s.Category == ticket.Category && 
-                                    s.IsActive);
+        var isImminentBreach = await _slaService.IsImminentSlaBreach(ticket);
+        var slaRemainingMinutes = ticket.SlaTargetDate.HasValue
+            ? (int?)(ticket.SlaTargetDate.Value - DateTime.UtcNow).TotalMinutes
+            : null;
 
-        if (slaConfig != null)
+        return new TicketDto
         {
-            ticket.SlaTargetDate = ticket.CreatedAt.AddMinutes(slaConfig.ResolutionTimeMinutes);
-            ticket.IsSlaBreach = ticket.SlaTargetDate < DateTime.UtcNow;
-        }
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Status = ticket.Status,
+            Priority = ticket.Priority,
+            Category = ticket.Category,
+            AzureResourceId = ticket.AzureResourceId,
+            AlertId = ticket.AlertId,
+            CreatedBy = new UserDto
+            {
+                Id = ticket.CreatedBy.Id,
+                Email = ticket.CreatedBy.Email,
+                FirstName = ticket.CreatedBy.FirstName,
+                LastName = ticket.CreatedBy.LastName,
+                Role = ticket.CreatedBy.Role,
+                IsActive = ticket.CreatedBy.IsActive,
+                CreatedAt = ticket.CreatedBy.CreatedAt,
+                UpdatedAt = ticket.CreatedBy.UpdatedAt
+            },
+            AssignedTo = ticket.AssignedTo == null ? null : new UserDto
+            {
+                Id = ticket.AssignedTo.Id,
+                Email = ticket.AssignedTo.Email,
+                FirstName = ticket.AssignedTo.FirstName,
+                LastName = ticket.AssignedTo.LastName,
+                Role = ticket.AssignedTo.Role,
+                IsActive = ticket.AssignedTo.IsActive,
+                CreatedAt = ticket.AssignedTo.CreatedAt,
+                UpdatedAt = ticket.AssignedTo.UpdatedAt
+            },
+            SlaTargetDate = ticket.SlaTargetDate,
+            IsSlaBreach = ticket.IsSlaBreach,
+            IsImminentSlaBreach = isImminentBreach,
+            SlaRemainingMinutes = slaRemainingMinutes,
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = ticket.UpdatedAt,
+            ResolvedAt = ticket.ResolvedAt,
+            ClosedAt = ticket.ClosedAt,
+            AttachmentCount = ticket.Attachments.Count
+        };
     }
 }

@@ -2,6 +2,7 @@ using AzureWorkflowSystem.Api.Controllers;
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,9 @@ public class TicketsControllerTests
     private static TicketsController GetController(WorkflowDbContext context)
     {
         var logger = new Mock<ILogger<TicketsController>>();
-        return new TicketsController(context, logger.Object);
+        var slaServiceLogger = new Mock<ILogger<SlaService>>();
+        var slaService = new SlaService(context, slaServiceLogger.Object);
+        return new TicketsController(context, logger.Object, slaService);
     }
 
     private static async Task<User> CreateTestUser(WorkflowDbContext context, string email = "test@test.com")

@@ -104,6 +104,15 @@ const useStyles = makeStyles({
   slaBreach: {
     color: tokens.colorPaletteRedForeground1,
   },
+  slaWarning: {
+    color: tokens.colorPaletteDarkOrangeForeground1,
+  },
+  cardWarning: {
+    ...shorthands.border('2px', 'solid', tokens.colorPaletteDarkOrangeBackground2),
+  },
+  cardBreach: {
+    ...shorthands.border('2px', 'solid', tokens.colorPaletteRedBackground2),
+  },
   // Priority colors
   priorityLow: {
     backgroundColor: tokens.colorPaletteGreenBackground1,
@@ -176,12 +185,42 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
     }
   };
 
+  const formatSlaCountdown = (remainingMinutes?: number) => {
+    if (!remainingMinutes) return null;
+
+    if (remainingMinutes < 0) {
+      const overdue = Math.abs(remainingMinutes);
+      if (overdue < 60) return `${overdue}m overdue`;
+      const hours = Math.floor(overdue / 60);
+      const mins = overdue % 60;
+      return mins > 0 ? `${hours}h ${mins}m overdue` : `${hours}h overdue`;
+    }
+
+    if (remainingMinutes < 60) return `${remainingMinutes}m left`;
+    const hours = Math.floor(remainingMinutes / 60);
+    const mins = remainingMinutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m left` : `${hours}h left`;
+  };
+
+  const getSlaStatusClass = () => {
+    if (ticket.isSlaBreach) return styles.slaBreach;
+    if (ticket.isImminentSlaBreach) return styles.slaWarning;
+    return '';
+  };
+
+  const getCardBorderClass = () => {
+    if (ticket.isSlaBreach) return styles.cardBreach;
+    if (ticket.isImminentSlaBreach) return styles.cardWarning;
+    return '';
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={mergeClasses(
         styles.card,
+        getCardBorderClass(),
         (isDragging || isSortableDragging) && styles.cardDragging,
       )}
       aria-label={`Ticket ${ticket.id}: ${ticket.title}. Priority: ${getPriorityLabel(ticket.priority)}. Status: ${getStatusLabel(ticket.status)}. ${ticket.assignedTo ? `Assigned to ${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName}` : 'Unassigned'}`}
@@ -218,10 +257,17 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
         </div>
 
         {ticket.slaTargetDate && (
-          <div className={mergeClasses(styles.slaInfo, ticket.isSlaBreach && styles.slaBreach)}>
+          <div className={mergeClasses(styles.slaInfo, getSlaStatusClass())}>
             <CalendarRegular />
-            <span>{formatDate(ticket.slaTargetDate)}</span>
-            {ticket.isSlaBreach && <AlertRegular />}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span style={{ fontSize: '11px' }}>{formatDate(ticket.slaTargetDate)}</span>
+              {ticket.slaRemainingMinutes !== undefined && (
+                <span style={{ fontSize: '10px', fontWeight: 'bold' }}>
+                  {formatSlaCountdown(ticket.slaRemainingMinutes)}
+                </span>
+              )}
+            </div>
+            {(ticket.isSlaBreach || ticket.isImminentSlaBreach) && <AlertRegular />}
           </div>
         )}
       </div>
