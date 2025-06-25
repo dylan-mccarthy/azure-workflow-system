@@ -187,7 +187,7 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
 
   const formatSlaCountdown = (remainingMinutes?: number) => {
     if (!remainingMinutes) return null;
-    
+
     if (remainingMinutes < 0) {
       const overdue = Math.abs(remainingMinutes);
       if (overdue < 60) return `${overdue}m overdue`;
@@ -195,7 +195,7 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
       const mins = overdue % 60;
       return mins > 0 ? `${hours}h ${mins}m overdue` : `${hours}h overdue`;
     }
-    
+
     if (remainingMinutes < 60) return `${remainingMinutes}m left`;
     const hours = Math.floor(remainingMinutes / 60);
     const mins = remainingMinutes % 60;

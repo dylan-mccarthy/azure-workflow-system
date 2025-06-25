@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 // These would normally be exported from the component, but for testing we'll define them here
 const formatSlaCountdown = (remainingMinutes?: number) => {
   if (!remainingMinutes) return null;
-  
+
   if (remainingMinutes < 0) {
     const overdue = Math.abs(remainingMinutes);
     if (overdue < 60) return `${overdue}m overdue`;
@@ -11,7 +11,7 @@ const formatSlaCountdown = (remainingMinutes?: number) => {
     const mins = overdue % 60;
     return mins > 0 ? `${hours}h ${mins}m overdue` : `${hours}h overdue`;
   }
-  
+
   if (remainingMinutes < 60) return `${remainingMinutes}m left`;
   const hours = Math.floor(remainingMinutes / 60);
   const mins = remainingMinutes % 60;
@@ -118,7 +118,7 @@ describe('SLA Utility Functions', () => {
       const totalMinutes = 240; // 4 hours
       const remainingMinutes = 24; // 24 minutes left
       const percentage = (remainingMinutes / totalMinutes) * 100;
-      
+
       expect(percentage).toBe(10); // Exactly 10% remaining
       expect(percentage <= 10).toBe(true); // Should trigger imminent breach
     });

@@ -91,10 +91,10 @@ describe('TicketCard', () => {
   });
 
   it('displays SLA countdown when slaRemainingMinutes is provided', () => {
-    const ticketWithSla = { 
-      ...mockTicket, 
+    const ticketWithSla = {
+      ...mockTicket,
       slaRemainingMinutes: 90,
-      slaTargetDate: '2024-01-01T12:00:00Z'
+      slaTargetDate: '2024-01-01T12:00:00Z',
     };
     renderWithProvider(<TicketCard ticket={ticketWithSla} />);
 
@@ -102,11 +102,11 @@ describe('TicketCard', () => {
   });
 
   it('displays overdue status when SLA is breached', () => {
-    const breachedTicket = { 
-      ...mockTicket, 
+    const breachedTicket = {
+      ...mockTicket,
       slaRemainingMinutes: -30,
       slaTargetDate: '2024-01-01T12:00:00Z',
-      isSlaBreach: true
+      isSlaBreach: true,
     };
     renderWithProvider(<TicketCard ticket={breachedTicket} />);
 
@@ -114,11 +114,11 @@ describe('TicketCard', () => {
   });
 
   it('applies warning border for imminent SLA breach', () => {
-    const imminentTicket = { 
-      ...mockTicket, 
+    const imminentTicket = {
+      ...mockTicket,
       isImminentSlaBreach: true,
       slaRemainingMinutes: 15,
-      slaTargetDate: '2024-01-01T12:00:00Z'
+      slaTargetDate: '2024-01-01T12:00:00Z',
     };
     renderWithProvider(<TicketCard ticket={imminentTicket} />);
 
@@ -127,11 +127,11 @@ describe('TicketCard', () => {
   });
 
   it('applies breach border for SLA breach', () => {
-    const breachedTicket = { 
-      ...mockTicket, 
+    const breachedTicket = {
+      ...mockTicket,
       isSlaBreach: true,
       slaRemainingMinutes: -10,
-      slaTargetDate: '2024-01-01T12:00:00Z'
+      slaTargetDate: '2024-01-01T12:00:00Z',
     };
     renderWithProvider(<TicketCard ticket={breachedTicket} />);
 
@@ -140,11 +140,11 @@ describe('TicketCard', () => {
   });
 
   it('shows SLA information for imminent breach', () => {
-    const imminentTicket = { 
-      ...mockTicket, 
+    const imminentTicket = {
+      ...mockTicket,
       isImminentSlaBreach: true,
       slaTargetDate: '2024-01-01T12:00:00Z',
-      slaRemainingMinutes: 30
+      slaRemainingMinutes: 30,
     };
     renderWithProvider(<TicketCard ticket={imminentTicket} />);
 
@@ -154,11 +154,11 @@ describe('TicketCard', () => {
   });
 
   it('shows SLA information for actual breach', () => {
-    const breachedTicket = { 
-      ...mockTicket, 
+    const breachedTicket = {
+      ...mockTicket,
       isSlaBreach: true,
       slaTargetDate: '2024-01-01T12:00:00Z',
-      slaRemainingMinutes: -20
+      slaRemainingMinutes: -20,
     };
     renderWithProvider(<TicketCard ticket={breachedTicket} />);
 
@@ -175,29 +175,29 @@ describe('TicketCard', () => {
       { remaining: 120, expected: '2h left' },
       { remaining: -15, expected: '15m overdue' },
       { remaining: -90, expected: '1h 30m overdue' },
-      { remaining: -120, expected: '2h overdue' }
+      { remaining: -120, expected: '2h overdue' },
     ];
 
     testCases.forEach(({ remaining, expected }) => {
       const { unmount } = renderWithProvider(
-        <TicketCard 
-          ticket={{ 
-            ...mockTicket, 
+        <TicketCard
+          ticket={{
+            ...mockTicket,
             slaRemainingMinutes: remaining,
-            slaTargetDate: '2024-01-01T12:00:00Z'
-          }} 
-        />
+            slaTargetDate: '2024-01-01T12:00:00Z',
+          }}
+        />,
       );
-      
+
       expect(screen.getByText(expected)).toBeInTheDocument();
       unmount();
     });
   });
 
   it('displays SLA date correctly', () => {
-    const ticketWithSla = { 
-      ...mockTicket, 
-      slaTargetDate: '2024-01-01T12:00:00Z'
+    const ticketWithSla = {
+      ...mockTicket,
+      slaTargetDate: '2024-01-01T12:00:00Z',
     };
     renderWithProvider(<TicketCard ticket={ticketWithSla} />);
 
@@ -205,10 +205,10 @@ describe('TicketCard', () => {
   });
 
   it('does not show SLA info when no slaTargetDate', () => {
-    const ticketNoSla = { 
-      ...mockTicket, 
+    const ticketNoSla = {
+      ...mockTicket,
       slaTargetDate: undefined,
-      slaRemainingMinutes: undefined
+      slaRemainingMinutes: undefined,
     };
     renderWithProvider(<TicketCard ticket={ticketNoSla} />);
 
@@ -220,28 +220,32 @@ describe('TicketCard', () => {
   it('handles SLA status correctly', () => {
     // Test with imminent breach
     const { rerender } = renderWithProvider(
-      <TicketCard ticket={{ 
-        ...mockTicket, 
-        isImminentSlaBreach: true, 
-        slaTargetDate: '2024-01-01T12:00:00Z',
-        slaRemainingMinutes: 10
-      }} />
+      <TicketCard
+        ticket={{
+          ...mockTicket,
+          isImminentSlaBreach: true,
+          slaTargetDate: '2024-01-01T12:00:00Z',
+          slaRemainingMinutes: 10,
+        }}
+      />,
     );
-    
+
     expect(screen.getByText('10m left')).toBeInTheDocument();
 
     // Test with actual breach
     rerender(
       <FluentProvider theme={webLightTheme}>
-        <TicketCard ticket={{ 
-          ...mockTicket, 
-          isSlaBreach: true, 
-          slaTargetDate: '2024-01-01T12:00:00Z',
-          slaRemainingMinutes: -5
-        }} />
-      </FluentProvider>
+        <TicketCard
+          ticket={{
+            ...mockTicket,
+            isSlaBreach: true,
+            slaTargetDate: '2024-01-01T12:00:00Z',
+            slaRemainingMinutes: -5,
+          }}
+        />
+      </FluentProvider>,
     );
-    
+
     expect(screen.getByText('5m overdue')).toBeInTheDocument();
   });
 });
