@@ -19,6 +19,7 @@ import {
   DocumentArrowDownRegular,
   CalendarRegular,
   ChartMultipleRegular,
+  LockClosedRegular,
 } from '@fluentui/react-icons';
 import {
   LineChart,
@@ -35,6 +36,7 @@ import {
   Bar,
 } from 'recharts';
 import { ApiService } from '../services/api';
+import { useUser } from '../contexts/UserContext';
 import {
   ReportMetricsDto,
   TicketTrendDto,
@@ -107,12 +109,25 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     minHeight: '200px',
   },
+  accessDenied: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '400px',
+    gap: '16px',
+    color: tokens.colorNeutralForeground2,
+  },
+  accessDeniedIcon: {
+    fontSize: '48px',
+  },
 });
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const ReportsPage: React.FC = () => {
   const styles = useStyles();
+  const { canViewReports, canExportData, currentUser } = useUser();
   const [metrics, setMetrics] = useState<ReportMetricsDto | null>(null);
   const [trends, setTrends] = useState<TicketTrendDto[]>([]);
   const [filters, setFilters] = useState<ReportFiltersDto>({
@@ -121,6 +136,17 @@ const ReportsPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check access permissions
+  if (!canViewReports()) {
+    return (
+      <div className={styles.accessDenied}>
+        <LockClosedRegular className={styles.accessDeniedIcon} />
+        <Title2>Access Denied</Title2>
+        <Body1>You don't have permission to view reports. Please contact your administrator.</Body1>
+      </div>
+    );
+  }
 
   const loadData = async () => {
     setLoading(true);
@@ -198,22 +224,24 @@ const ReportsPage: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <Title1>Reports & Analytics</Title1>
-        <div className={styles.exportButtons}>
-          <Button
-            appearance="secondary"
-            icon={<DocumentArrowDownRegular />}
-            onClick={() => handleExport('tickets')}
-          >
-            Export Tickets
-          </Button>
-          <Button
-            appearance="secondary"
-            icon={<DocumentArrowDownRegular />}
-            onClick={() => handleExport('audit-logs')}
-          >
-            Export Audit Logs
-          </Button>
-        </div>
+        {canExportData() && (
+          <div className={styles.exportButtons}>
+            <Button
+              appearance="secondary"
+              icon={<DocumentArrowDownRegular />}
+              onClick={() => handleExport('tickets')}
+            >
+              Export Tickets
+            </Button>
+            <Button
+              appearance="secondary"
+              icon={<DocumentArrowDownRegular />}
+              onClick={() => handleExport('audit-logs')}
+            >
+              Export Audit Logs
+            </Button>
+          </div>
+        )}
       </div>
 
       {error && (

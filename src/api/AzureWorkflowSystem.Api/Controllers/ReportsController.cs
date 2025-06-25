@@ -5,6 +5,7 @@ using System.Text;
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using AzureWorkflowSystem.Api.Authorization;
 
 namespace AzureWorkflowSystem.Api.Controllers;
 
@@ -24,6 +25,7 @@ public class ReportsController : ControllerBase
     /// Get reporting metrics including MTTA, MTTR, and SLA compliance
     /// </summary>
     [HttpGet("metrics")]
+    [RequireRole(UserRole.Engineer, UserRole.Manager, UserRole.Admin)]
     public async Task<ActionResult<ReportMetricsDto>> GetMetrics(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
@@ -85,6 +87,7 @@ public class ReportsController : ControllerBase
     /// Get ticket trend data for charts
     /// </summary>
     [HttpGet("trends")]
+    [RequireRole(UserRole.Engineer, UserRole.Manager, UserRole.Admin)]
     public async Task<ActionResult<IEnumerable<TicketTrendDto>>> GetTrends(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
@@ -119,6 +122,7 @@ public class ReportsController : ControllerBase
     /// Export tickets as CSV
     /// </summary>
     [HttpGet("export/tickets")]
+    [RequireRole(UserRole.Manager, UserRole.Admin)]
     public async Task<IActionResult> ExportTickets(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
@@ -176,6 +180,7 @@ public class ReportsController : ControllerBase
     /// Export audit logs as CSV
     /// </summary>
     [HttpGet("export/audit-logs")]
+    [RequireRole(UserRole.Manager, UserRole.Admin)]
     public async Task<IActionResult> ExportAuditLogs(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
