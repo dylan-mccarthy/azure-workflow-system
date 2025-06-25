@@ -176,3 +176,44 @@ FodyWeavers.xsd
 .env.development.local
 .env.test.local
 .env.production.local
+
+# ASP.NET Core specific
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+*.runtimeconfig.json
+
+# Publish output
+publish/
+PublishProfiles/
+*.pubxml
+*.pubxml.user
+*.publishproj
+
+# Entity Framework
+*.edmx.diagram
+*.edmx.sql
+
+# Azure Functions
+local.settings.json
+__azurite_db*__.json
+__blobstorage__
+__queuestorage__
+
+# JetBrains Rider additional patterns
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Certificates
+*.pfx
+*.p12
+*.key
+*.crt
+*.cer
