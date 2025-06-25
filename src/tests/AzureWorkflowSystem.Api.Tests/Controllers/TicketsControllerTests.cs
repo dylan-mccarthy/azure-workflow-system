@@ -50,7 +50,7 @@ public class TicketsControllerTests
     {
         var slaConfig = new SlaConfiguration
         {
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             ResolutionTimeMinutes = 240, // 4 hours
             IsActive = true,
@@ -268,7 +268,7 @@ public class TicketsControllerTests
         {
             Title = "New Ticket",
             Description = "New ticket description",
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             AzureResourceId = "test-resource",
             AlertId = "test-alert"
@@ -282,7 +282,7 @@ public class TicketsControllerTests
         var ticketDto = Assert.IsType<TicketDto>(createdResult.Value);
         Assert.Equal("New Ticket", ticketDto.Title);
         Assert.Equal("New ticket description", ticketDto.Description);
-        Assert.Equal(TicketPriority.High, ticketDto.Priority);
+        Assert.Equal(TicketPriority.Emergency, ticketDto.Priority);
         Assert.Equal(TicketCategory.Incident, ticketDto.Category);
         Assert.Equal(TicketStatus.New, ticketDto.Status);
         Assert.Equal("test-resource", ticketDto.AzureResourceId);
@@ -308,7 +308,7 @@ public class TicketsControllerTests
         {
             Title = "SLA Test Ticket",
             Description = "Testing SLA calculation",
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident
         };
 

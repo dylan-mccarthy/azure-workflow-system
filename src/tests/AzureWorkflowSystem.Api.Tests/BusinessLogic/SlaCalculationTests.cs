@@ -26,7 +26,7 @@ public class SlaCalculationTests
         
         var slaConfig = new SlaConfiguration
         {
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             ResolutionTimeMinutes = 120, // 2 hours
             IsActive = true,
@@ -37,12 +37,12 @@ public class SlaCalculationTests
         context.SlaConfigurations.Add(slaConfig);
         await context.SaveChangesAsync();
 
-        var createdAt = new DateTime(2023, 12, 1, 10, 0, 0, DateTimeKind.Utc);
+        var createdAt = DateTime.UtcNow.AddMinutes(-30); // 30 minutes ago
         var ticket = new Ticket
         {
             Title = "Test Ticket",
             Description = "Test Description",
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             Status = TicketStatus.New,
             CreatedById = 1,
@@ -95,8 +95,8 @@ public class SlaCalculationTests
         {
             Title = "Test Ticket",
             Description = "Test Description",
-            Priority = TicketPriority.High, // Different priority
-            Category = TicketCategory.Incident, // Different category
+            Priority = TicketPriority.Emergency, // Different priority
+            Category = TicketCategory.Change, // Different category
             Status = TicketStatus.New,
             CreatedById = 1,
             CreatedAt = DateTime.UtcNow,
@@ -129,7 +129,7 @@ public class SlaCalculationTests
         
         var inactiveSlaConfig = new SlaConfiguration
         {
-            Priority = TicketPriority.Critical,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Alert,
             ResolutionTimeMinutes = 30,
             IsActive = false, // Inactive
@@ -142,9 +142,9 @@ public class SlaCalculationTests
 
         var ticket = new Ticket
         {
-            Title = "Critical Alert",
-            Description = "Critical alert ticket",
-            Priority = TicketPriority.Critical,
+            Title = "Emergency Alert",
+            Description = "Emergency alert ticket",
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Alert,
             Status = TicketStatus.New,
             CreatedById = 1,
@@ -178,7 +178,7 @@ public class SlaCalculationTests
         
         var slaConfig = new SlaConfiguration
         {
-            Priority = TicketPriority.Critical,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             ResolutionTimeMinutes = 60, // 1 hour
             IsActive = true,
@@ -193,9 +193,9 @@ public class SlaCalculationTests
         var createdAt = DateTime.UtcNow.AddHours(-2);
         var ticket = new Ticket
         {
-            Title = "Old Critical Ticket",
+            Title = "Old Emergency Ticket",
             Description = "This ticket is old",
-            Priority = TicketPriority.Critical,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             Status = TicketStatus.New,
             CreatedById = 1,
@@ -223,12 +223,12 @@ public class SlaCalculationTests
     }
 
     [Theory]
-    [InlineData(TicketPriority.Critical, TicketCategory.Incident, 15)]
-    [InlineData(TicketPriority.High, TicketCategory.Incident, 60)]
-    [InlineData(TicketPriority.Medium, TicketCategory.Incident, 240)]
-    [InlineData(TicketPriority.Low, TicketCategory.Incident, 480)]
-    [InlineData(TicketPriority.Critical, TicketCategory.Alert, 30)]
-    [InlineData(TicketPriority.High, TicketCategory.NewResource, 720)]
+    [InlineData(TicketPriority.Emergency, TicketCategory.Incident, 15)]
+    [InlineData(TicketPriority.Emergency, TicketCategory.Alert, 60)]
+    [InlineData(TicketPriority.Emergency, TicketCategory.Access, 240)]
+    [InlineData(TicketPriority.Emergency, TicketCategory.NewResource, 480)]
+    [InlineData(TicketPriority.Emergency, TicketCategory.Change, 720)]
+    [InlineData(TicketPriority.High, TicketCategory.Change, 960)]
     public async Task SlaCalculation_WithDifferentPriorityAndCategory_UsesCorrectResolutionTime(
         TicketPriority priority, TicketCategory category, int expectedMinutes)
     {
@@ -288,7 +288,7 @@ public class SlaCalculationTests
         
         var slaConfig1 = new SlaConfiguration
         {
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             ResolutionTimeMinutes = 120,
             IsActive = true,
@@ -298,7 +298,7 @@ public class SlaCalculationTests
 
         var slaConfig2 = new SlaConfiguration
         {
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             ResolutionTimeMinutes = 60, // Different resolution time
             IsActive = true,
@@ -313,7 +313,7 @@ public class SlaCalculationTests
         {
             Title = "Test Ticket",
             Description = "Test Description",
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             Status = TicketStatus.New,
             CreatedById = 1,
