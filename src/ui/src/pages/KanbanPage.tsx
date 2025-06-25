@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   makeStyles,
   shorthands,
-  tokens,
   Title2,
   Spinner,
   Body1,
+  MessageBar,
+  MessageBarBody,
 } from '@fluentui/react-components';
 import KanbanBoard from '../components/Kanban/KanbanBoard';
-import { TicketDto, UserDto } from '../types/api';
+import { TicketDto, UserDto, TicketStatus } from '../types/api';
+import { useUser } from '../contexts/UserContext';
 import ApiService from '../services/api';
 
 const useStyles = makeStyles({
@@ -27,16 +29,11 @@ const useStyles = makeStyles({
     height: '200px',
     gap: '12px',
   },
-  error: {
-    ...shorthands.padding('16px'),
-    backgroundColor: tokens.colorPaletteRedBackground1,
-    ...shorthands.borderRadius('4px'),
-    color: tokens.colorPaletteRedForeground1,
-  },
 });
 
 const KanbanPage: React.FC = () => {
   const styles = useStyles();
+  const { canAssignTickets, canViewAllTickets } = useUser();
   const [tickets, setTickets] = useState<TicketDto[]>([]);
   const [engineers, setEngineers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +44,11 @@ const KanbanPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+        
+        if (!canViewAllTickets()) {
+          setError('You do not have permission to view tickets.');
+          return;
+        }
         
         const [ticketsData, engineersData] = await Promise.all([
           ApiService.getTickets(),
@@ -64,24 +66,36 @@ const KanbanPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [canViewAllTickets]);
 
   const handleTicketMove = async (ticketId: number, newAssigneeId?: number) => {
+    if (!canAssignTickets()) {
+      setError('You do not have permission to assign tickets.');
+      return;
+    }
+
     try {
-      if (newAssigneeId) {
+      if (newAssigneeId !== undefined) {
+        // Assign the ticket
         await ApiService.assignTicket(ticketId, { assignedToId: newAssigneeId });
         
-        // Update local state
+        // Update local state - ticket assignment
         setTickets(prevTickets =>
           prevTickets.map(ticket =>
             ticket.id === ticketId
               ? {
                   ...ticket,
-                  assignedTo: engineers.find(eng => eng.id === newAssigneeId),
+                  assignedTo: newAssigneeId 
+                    ? engineers.find(eng => eng.id === newAssigneeId) 
+                    : undefined,
+                  status: newAssigneeId ? TicketStatus.Assigned : TicketStatus.New,
                 }
               : ticket
           )
         );
+        
+        // Clear any previous errors
+        setError(null);
       }
     } catch (err) {
       console.error('Failed to move ticket:', err);
@@ -103,9 +117,9 @@ const KanbanPage: React.FC = () => {
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
-          <Body1>{error}</Body1>
-        </div>
+        <MessageBar intent="error">
+          <MessageBarBody>{error}</MessageBarBody>
+        </MessageBar>
       </div>
     );
   }

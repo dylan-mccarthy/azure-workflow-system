@@ -11,10 +11,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
   restrictToWindowEdges,
@@ -22,7 +19,6 @@ import {
 import {
   makeStyles,
   shorthands,
-  tokens,
 } from '@fluentui/react-components';
 import { TicketDto, UserDto, TicketStatus } from '../../types/api';
 import KanbanColumn from './KanbanColumn';

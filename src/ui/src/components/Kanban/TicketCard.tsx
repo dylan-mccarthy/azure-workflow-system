@@ -19,7 +19,6 @@ import {
 import { 
   TicketDto, 
   TicketPriority, 
-  TicketStatus,
   getStatusLabel, 
   getPriorityLabel, 
   getCategoryLabel 
@@ -185,6 +184,7 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, isDragging = false }) =
         styles.card,
         (isDragging || isSortableDragging) && styles.cardDragging
       )}
+      aria-label={`Ticket ${ticket.id}: ${ticket.title}. Priority: ${getPriorityLabel(ticket.priority)}. Status: ${getStatusLabel(ticket.status)}. ${ticket.assignedTo ? `Assigned to ${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName}` : 'Unassigned'}`}
       {...attributes}
       {...listeners}
     >

@@ -31,6 +31,6 @@ module.exports = [
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'coverage/**', '*.min.js'],
+    ignores: ['node_modules/**', 'dist/**', 'coverage/**', '*.min.js', 'src/ui/**'],
   },
 ];

@@ -104,6 +104,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ id, title, tickets }) => {
           styles.dropZone,
           isOver && styles.dropZoneActive
         )}
+        role="region"
+        aria-label={`${title} swim lane with ${tickets.length} tickets`}
       >
         <SortableContext
           items={tickets.map(ticket => ticket.id)}

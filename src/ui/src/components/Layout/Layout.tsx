@@ -5,6 +5,7 @@ import {
   tokens,
   Title1,
   Body1,
+  Spinner,
 } from '@fluentui/react-components';
 import {
   GridKanbanRegular,
@@ -12,6 +13,8 @@ import {
   DocumentRegular,
   SettingsRegular,
 } from '@fluentui/react-icons';
+import { useUser } from '../../contexts/UserContext';
+import { getRoleLabel } from '../../types/api';
 
 const useStyles = makeStyles({
   container: {
@@ -76,6 +79,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const styles = useStyles();
+  const { currentUser, isLoading } = useUser();
 
   const navItems = [
     { icon: <GridKanbanRegular />, label: 'Kanban Board', path: '/kanban', active: true },
@@ -90,7 +94,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Title1 className={styles.headerTitle}>
           Azure Workflow System
         </Title1>
-        <Body1>Welcome, User</Body1>
+        {isLoading ? (
+          <Spinner size="small" />
+        ) : (
+          <Body1>
+            {currentUser ? (
+              `${currentUser.firstName} ${currentUser.lastName} (${getRoleLabel(currentUser.role)})`
+            ) : (
+              'Welcome, User'
+            )}
+          </Body1>
+        )}
       </header>
       
       <main className={styles.main}>
