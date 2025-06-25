@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "EjRPBkic/4AlLV1zsCe311nlu8M4JOLdq0IWPC6T2oI=",
+  "Source": "AzureWorkflowSystem.Api",
+  "BasePath": "_content/AzureWorkflowSystem.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
