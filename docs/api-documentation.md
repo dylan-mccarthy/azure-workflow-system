@@ -242,7 +242,9 @@ Delete an attachment.
 #### POST /api/alerts
 Webhook endpoint for Azure Monitor alerts. Creates tickets automatically from alert payloads.
 
-**Authorization Required**: No (designed for Azure Monitor webhooks)  
+**Authorization Required**: Yes (API Key via X-API-Key header)  
+**Request Headers**: 
+- `X-API-Key`: Your webhook API key
 **Request Body**: Azure Monitor Common Alert Schema
 
 ```json
@@ -286,6 +288,10 @@ Webhook endpoint for Azure Monitor alerts. Creates tickets automatically from al
   "alertId": "alert-123"
 }
 ```
+
+**Error Responses**:
+- `401 Unauthorized`: Missing or invalid X-API-Key header
+- `500 Internal Server Error`: Error processing alert payload
 
 ## Error Responses
 

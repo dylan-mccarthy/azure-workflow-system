@@ -25,7 +25,7 @@ public class AlertsController : ControllerBase
     /// Creates a ticket automatically from alert payload
     /// </summary>
     [HttpPost]
-    [AllowAnonymous] // For webhook - in production, secure with API key or other auth
+    [Authorize(AuthenticationSchemes = "ApiKey")]
     public async Task<ActionResult> ProcessAlert(AlertWebhookDto alertPayload)
     {
         try

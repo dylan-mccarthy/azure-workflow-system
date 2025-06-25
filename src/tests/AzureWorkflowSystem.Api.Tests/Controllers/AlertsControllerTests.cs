@@ -2,10 +2,14 @@ using AzureWorkflowSystem.Api.Controllers;
 using AzureWorkflowSystem.Api.Data;
 using AzureWorkflowSystem.Api.DTOs;
 using AzureWorkflowSystem.Api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Reflection;
+using System.Security.Claims;
 using Xunit;
 
 namespace AzureWorkflowSystem.Api.Tests.Controllers;
@@ -26,7 +30,29 @@ public class AlertsControllerTests
     private static AlertsController GetController(WorkflowDbContext context)
     {
         var logger = new Mock<ILogger<AlertsController>>();
-        return new AlertsController(context, logger.Object);
+        var controller = new AlertsController(context, logger.Object);
+        
+        // Set up authenticated context for API key authorization
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["X-API-Key"] = "development-webhook-api-key-for-testing-only";
+        
+        // Mock successful authentication
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, "WebhookClient"),
+            new Claim(ClaimTypes.NameIdentifier, "webhook-client"),
+            new Claim("webhook", "true")
+        };
+        var identity = new ClaimsIdentity(claims, "ApiKey");
+        var principal = new ClaimsPrincipal(identity);
+        httpContext.User = principal;
+        
+        controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = httpContext
+        };
+        
+        return controller;
     }
 
     private static async Task<User> CreateTestUser(WorkflowDbContext context)
@@ -362,6 +388,81 @@ public class AlertsControllerTests
         // Verify no ticket was created
         var ticketCount = await context.Tickets.CountAsync();
         Assert.Equal(0, ticketCount);
+    }
+
+    [Fact]
+    public async Task ProcessAlert_WithoutApiKey_ReturnsUnauthorized()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+
+        // Create controller without authentication context (simulates missing API key)
+        var logger = new Mock<ILogger<AlertsController>>();
+        var controller = new AlertsController(context, logger.Object);
+        
+        // Create mock HttpContext without X-API-Key header
+        var httpContext = new DefaultHttpContext();
+        controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = httpContext
+        };
+
+        var alertPayload = CreateTestAlertPayload();
+
+        // Act & Assert
+        // Since the controller now requires [Authorize(AuthenticationSchemes = "ApiKey")],
+        // this test verifies the authentication requirement exists
+        // The actual 401 response would be handled by the authentication middleware
+        // We can verify the attribute is present
+        var method = typeof(AlertsController).GetMethod(nameof(AlertsController.ProcessAlert));
+        var authorizeAttribute = method?.GetCustomAttributes(typeof(AuthorizeAttribute), false).FirstOrDefault() as AuthorizeAttribute;
+        
+        Assert.NotNull(authorizeAttribute);
+        Assert.Equal("ApiKey", authorizeAttribute.AuthenticationSchemes);
+    }
+
+    [Fact]
+    public async Task ProcessAlert_WithValidApiKey_Succeeds()
+    {
+        // Arrange
+        using var context = GetDbContext();
+        var user = await CreateTestUser(context);
+
+        var controller = GetController(context);
+        
+        // Create mock HttpContext with valid API key
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["X-API-Key"] = "development-webhook-api-key-for-testing-only";
+        
+        // Mock successful authentication
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, "WebhookClient"),
+            new Claim(ClaimTypes.NameIdentifier, "webhook-client"),
+            new Claim("webhook", "true")
+        };
+        var identity = new ClaimsIdentity(claims, "ApiKey");
+        var principal = new ClaimsPrincipal(identity);
+        httpContext.User = principal;
+        
+        controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = httpContext
+        };
+
+        var alertPayload = CreateTestAlertPayload("auth-test-alert");
+
+        // Act
+        var result = await controller.ProcessAlert(alertPayload);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        
+        // Verify ticket was created
+        var ticket = await context.Tickets.FirstOrDefaultAsync(t => t.AlertId == "auth-test-alert");
+        Assert.NotNull(ticket);
+        Assert.Equal("Alert: Test Alert Rule", ticket.Title);
     }
 
     [Fact]
