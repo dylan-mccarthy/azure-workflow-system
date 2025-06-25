@@ -141,7 +141,9 @@ export class ApiService {
       if (filters?.priority) params.append('priority', filters.priority.toString());
       if (filters?.category) params.append('category', filters.category.toString());
 
-      const response = await apiClient.get<ReportMetricsDto>(`/reports/metrics?${params.toString()}`);
+      const response = await apiClient.get<ReportMetricsDto>(
+        `/reports/metrics?${params.toString()}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to fetch report metrics:', error);
@@ -152,7 +154,7 @@ export class ApiService {
   static async getReportTrends(
     fromDate?: string,
     toDate?: string,
-    groupBy: string = 'day'
+    groupBy: string = 'day',
   ): Promise<TicketTrendDto[]> {
     try {
       const params = new URLSearchParams();
@@ -160,7 +162,9 @@ export class ApiService {
       if (toDate) params.append('toDate', toDate);
       params.append('groupBy', groupBy);
 
-      const response = await apiClient.get<TicketTrendDto[]>(`/reports/trends?${params.toString()}`);
+      const response = await apiClient.get<TicketTrendDto[]>(
+        `/reports/trends?${params.toString()}`,
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to fetch report trends:', error);
@@ -190,7 +194,7 @@ export class ApiService {
   static async exportAuditLogs(
     fromDate?: string,
     toDate?: string,
-    ticketId?: number
+    ticketId?: number,
   ): Promise<Blob | null> {
     try {
       const params = new URLSearchParams();

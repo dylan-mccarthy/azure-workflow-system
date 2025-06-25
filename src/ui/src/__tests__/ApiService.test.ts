@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ReportMetricsDto, TicketTrendDto, ReportFiltersDto, TicketPriority, TicketCategory } from '../types/api';
+import {
+  ReportMetricsDto,
+  TicketTrendDto,
+  ReportFiltersDto,
+  TicketPriority,
+  TicketCategory,
+} from '../types/api';
 
 // Create mock functions first
 const mockGet = vi.fn();
@@ -99,7 +105,9 @@ describe('ApiService', () => {
 
       const result = await ApiService.getReportMetrics(filters);
 
-      expect(mockGet).toHaveBeenCalledWith('/reports/metrics?fromDate=2024-01-01&toDate=2024-01-31&priority=3&category=1');
+      expect(mockGet).toHaveBeenCalledWith(
+        '/reports/metrics?fromDate=2024-01-01&toDate=2024-01-31&priority=3&category=1',
+      );
       expect(result).toEqual(mockMetrics);
     });
 
@@ -121,7 +129,9 @@ describe('ApiService', () => {
 
       const result = await ApiService.getReportTrends('2024-01-01', '2024-01-31');
 
-      expect(mockGet).toHaveBeenCalledWith('/reports/trends?fromDate=2024-01-01&toDate=2024-01-31&groupBy=day');
+      expect(mockGet).toHaveBeenCalledWith(
+        '/reports/trends?fromDate=2024-01-01&toDate=2024-01-31&groupBy=day',
+      );
       expect(result).toEqual(mockTrends);
     });
 
@@ -137,9 +147,12 @@ describe('ApiService', () => {
 
       const result = await ApiService.exportTickets(filters);
 
-      expect(mockGet).toHaveBeenCalledWith('/reports/export/tickets?fromDate=2024-01-01&toDate=2024-01-31&priority=2', {
-        responseType: 'blob',
-      });
+      expect(mockGet).toHaveBeenCalledWith(
+        '/reports/export/tickets?fromDate=2024-01-01&toDate=2024-01-31&priority=2',
+        {
+          responseType: 'blob',
+        },
+      );
       expect(result).toEqual(mockBlob);
     });
 
@@ -149,9 +162,12 @@ describe('ApiService', () => {
 
       const result = await ApiService.exportAuditLogs('2024-01-01', '2024-01-31', 123);
 
-      expect(mockGet).toHaveBeenCalledWith('/reports/export/audit-logs?fromDate=2024-01-01&toDate=2024-01-31&ticketId=123', {
-        responseType: 'blob',
-      });
+      expect(mockGet).toHaveBeenCalledWith(
+        '/reports/export/audit-logs?fromDate=2024-01-01&toDate=2024-01-31&ticketId=123',
+        {
+          responseType: 'blob',
+        },
+      );
       expect(result).toEqual(mockBlob);
     });
 
@@ -163,7 +179,7 @@ describe('ApiService', () => {
 
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch report metrics:', expect.any(Error));
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -175,7 +191,7 @@ describe('ApiService', () => {
 
       expect(result).toEqual([]);
       expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch report trends:', expect.any(Error));
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -187,7 +203,7 @@ describe('ApiService', () => {
 
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith('Failed to export tickets:', expect.any(Error));
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -199,7 +215,7 @@ describe('ApiService', () => {
 
       expect(result).toBeNull();
       expect(consoleSpy).toHaveBeenCalledWith('Failed to export audit logs:', expect.any(Error));
-      
+
       consoleSpy.mockRestore();
     });
 

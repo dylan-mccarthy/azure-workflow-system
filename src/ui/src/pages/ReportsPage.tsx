@@ -172,7 +172,7 @@ const ReportsPage: React.FC = () => {
   }, []);
 
   const handleFilterChange = (field: keyof ReportFiltersDto, value: any) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleApplyFilters = () => {
@@ -181,10 +181,11 @@ const ReportsPage: React.FC = () => {
 
   const handleExport = async (type: 'tickets' | 'audit-logs') => {
     try {
-      const blob = type === 'tickets' 
-        ? await ApiService.exportTickets(filters)
-        : await ApiService.exportAuditLogs(filters.fromDate, filters.toDate);
-      
+      const blob =
+        type === 'tickets'
+          ? await ApiService.exportTickets(filters)
+          : await ApiService.exportAuditLogs(filters.fromDate, filters.toDate);
+
       if (blob) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -209,12 +210,14 @@ const ReportsPage: React.FC = () => {
     return `${hours}h ${mins}m`;
   };
 
-  const pieChartData = metrics ? [
-    { name: 'Open', value: metrics.openTickets, color: '#FF8042' },
-    { name: 'Closed', value: metrics.closedTickets, color: '#00C49F' },
-  ] : [];
+  const pieChartData = metrics
+    ? [
+        { name: 'Open', value: metrics.openTickets, color: '#FF8042' },
+        { name: 'Closed', value: metrics.closedTickets, color: '#00C49F' },
+      ]
+    : [];
 
-  const trendChartData = trends.map(trend => ({
+  const trendChartData = trends.map((trend) => ({
     date: new Date(trend.date).toLocaleDateString(),
     open: trend.openTickets,
     closed: trend.closedTickets,
@@ -244,11 +247,7 @@ const ReportsPage: React.FC = () => {
         )}
       </div>
 
-      {error && (
-        <MessageBar intent="error">
-          {error}
-        </MessageBar>
-      )}
+      {error && <MessageBar intent="error">{error}</MessageBar>}
 
       {/* Filters */}
       <Card className={styles.filtersCard}>
@@ -275,16 +274,21 @@ const ReportsPage: React.FC = () => {
             <Dropdown
               placeholder="All priorities"
               value={filters.priority ? getPriorityLabel(filters.priority) : ''}
-              onOptionSelect={(_, data) => 
-                handleFilterChange('priority', data.optionValue ? parseInt(data.optionValue) : undefined)
+              onOptionSelect={(_, data) =>
+                handleFilterChange(
+                  'priority',
+                  data.optionValue ? parseInt(data.optionValue) : undefined,
+                )
               }
             >
               <Option value="">All priorities</Option>
-              {Object.values(TicketPriority).filter(p => typeof p === 'number').map(priority => (
-                <Option key={priority} value={priority.toString()}>
-                  {getPriorityLabel(priority as TicketPriority)}
-                </Option>
-              ))}
+              {Object.values(TicketPriority)
+                .filter((p) => typeof p === 'number')
+                .map((priority) => (
+                  <Option key={priority} value={priority.toString()}>
+                    {getPriorityLabel(priority as TicketPriority)}
+                  </Option>
+                ))}
             </Dropdown>
           </div>
           <div>
@@ -292,16 +296,21 @@ const ReportsPage: React.FC = () => {
             <Dropdown
               placeholder="All categories"
               value={filters.category ? getCategoryLabel(filters.category) : ''}
-              onOptionSelect={(_, data) => 
-                handleFilterChange('category', data.optionValue ? parseInt(data.optionValue) : undefined)
+              onOptionSelect={(_, data) =>
+                handleFilterChange(
+                  'category',
+                  data.optionValue ? parseInt(data.optionValue) : undefined,
+                )
               }
             >
               <Option value="">All categories</Option>
-              {Object.values(TicketCategory).filter(c => typeof c === 'number').map(category => (
-                <Option key={category} value={category.toString()}>
-                  {getCategoryLabel(category as TicketCategory)}
-                </Option>
-              ))}
+              {Object.values(TicketCategory)
+                .filter((c) => typeof c === 'number')
+                .map((category) => (
+                  <Option key={category} value={category.toString()}>
+                    {getCategoryLabel(category as TicketCategory)}
+                  </Option>
+                ))}
             </Dropdown>
           </div>
         </div>
@@ -328,7 +337,9 @@ const ReportsPage: React.FC = () => {
                 <div className={styles.metricLabel}>Mean Time to Resolution</div>
               </Card>
               <Card className={styles.metricCard}>
-                <div className={styles.metricValue}>{Math.round(metrics.slaCompliancePercentage)}%</div>
+                <div className={styles.metricValue}>
+                  {Math.round(metrics.slaCompliancePercentage)}%
+                </div>
                 <div className={styles.metricLabel}>SLA Compliance</div>
               </Card>
               <Card className={styles.metricCard}>

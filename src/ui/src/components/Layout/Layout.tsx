@@ -78,10 +78,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const navItems = [
-    { icon: <GridKanbanRegular />, label: 'Kanban Board', path: '/kanban', active: location.pathname === '/kanban' || location.pathname === '/' },
-    ...(canViewReports() ? [{ icon: <DocumentRegular />, label: 'Reports', path: '/reports', active: location.pathname === '/reports' }] : []),
-    { icon: <PersonRegular />, label: 'My Tickets', path: '/my-tickets', active: location.pathname === '/my-tickets' },
-    { icon: <SettingsRegular />, label: 'Settings', path: '/settings', active: location.pathname === '/settings' },
+    {
+      icon: <GridKanbanRegular />,
+      label: 'Kanban Board',
+      path: '/kanban',
+      active: location.pathname === '/kanban' || location.pathname === '/',
+    },
+    ...(canViewReports()
+      ? [
+          {
+            icon: <DocumentRegular />,
+            label: 'Reports',
+            path: '/reports',
+            active: location.pathname === '/reports',
+          },
+        ]
+      : []),
+    {
+      icon: <PersonRegular />,
+      label: 'My Tickets',
+      path: '/my-tickets',
+      active: location.pathname === '/my-tickets',
+    },
+    {
+      icon: <SettingsRegular />,
+      label: 'Settings',
+      path: '/settings',
+      active: location.pathname === '/settings',
+    },
   ];
 
   const handleNavigation = (path: string) => {

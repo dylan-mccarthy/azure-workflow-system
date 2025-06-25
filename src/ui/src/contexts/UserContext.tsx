@@ -70,9 +70,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   const canViewReports = (): boolean => {
     // Managers and Admins can view reports, Engineers can view basic reports
-    return currentUser?.role === UserRole.Manager || 
-           currentUser?.role === UserRole.Admin || 
-           currentUser?.role === UserRole.Engineer;
+    return (
+      currentUser?.role === UserRole.Manager ||
+      currentUser?.role === UserRole.Admin ||
+      currentUser?.role === UserRole.Engineer
+    );
   };
 
   const canExportData = (): boolean => {

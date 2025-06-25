@@ -29,7 +29,9 @@ vi.mock('recharts', () => ({
   YAxis: () => <div data-testid="y-axis"></div>,
   CartesianGrid: () => <div data-testid="cartesian-grid"></div>,
   Tooltip: () => <div data-testid="tooltip"></div>,
-  ResponsiveContainer: ({ children }: any) => <div data-testid="responsive-container">{children}</div>,
+  ResponsiveContainer: ({ children }: any) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
   PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
   Pie: () => <div data-testid="pie"></div>,
   Cell: () => <div data-testid="cell"></div>,
@@ -81,15 +83,14 @@ const createMockUserContext = (role: UserRole) => ({
   canExportData: () => [UserRole.Manager, UserRole.Admin].includes(role),
 });
 
-const renderWithProviders = (component: React.ReactElement, userRole: UserRole = UserRole.Manager) => {
+const renderWithProviders = (
+  component: React.ReactElement,
+  userRole: UserRole = UserRole.Manager,
+) => {
   const mockUserContext = createMockUserContext(userRole);
   vi.mocked(useUser).mockReturnValue(mockUserContext);
-  
-  return render(
-    <FluentProvider theme={webLightTheme}>
-      {component}
-    </FluentProvider>
-  );
+
+  return render(<FluentProvider theme={webLightTheme}>{component}</FluentProvider>);
 };
 
 describe('ReportsPage', () => {
@@ -105,7 +106,11 @@ describe('ReportsPage', () => {
       renderWithProviders(<ReportsPage />, UserRole.Viewer);
 
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.getByText("You don't have permission to view reports. Please contact your administrator.")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "You don't have permission to view reports. Please contact your administrator.",
+        ),
+      ).toBeInTheDocument();
     });
 
     it('allows engineers to view reports', async () => {
@@ -156,7 +161,9 @@ describe('ReportsPage', () => {
       renderWithProviders(<ReportsPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to load report data. Please try again.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Failed to load report data. Please try again.'),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -194,7 +201,7 @@ describe('ReportsPage', () => {
         mttaMinutes: 45, // 45 minutes
         mttrMinutes: 90, // 1h 30m
       };
-      
+
       vi.mocked(ApiService.getReportMetrics).mockResolvedValue(metricsWithVariousTimes);
 
       renderWithProviders(<ReportsPage />);
@@ -210,7 +217,7 @@ describe('ReportsPage', () => {
         ...mockMetrics,
         slaCompliancePercentage: 87.67,
       };
-      
+
       vi.mocked(ApiService.getReportMetrics).mockResolvedValue(metricsWithDecimalSla);
 
       renderWithProviders(<ReportsPage />);
