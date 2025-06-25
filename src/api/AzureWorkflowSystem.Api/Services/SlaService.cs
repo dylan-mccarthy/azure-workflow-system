@@ -68,11 +68,18 @@ public class SlaService : ISlaService
             return false;
         }
 
+        // If already breached, it's not imminent anymore
+        if (await IsSlaBreach(ticket))
+        {
+            return false;
+        }
+
         var totalSlaTime = ticket.SlaTargetDate.Value - ticket.CreatedAt;
         var bufferTime = TimeSpan.FromTicks((long)(totalSlaTime.Ticks * bufferPercentage));
-        var imminentBreachTime = ticket.SlaTargetDate.Value - bufferTime;
+        var remainingTime = ticket.SlaTargetDate.Value - DateTime.UtcNow;
 
-        return DateTime.UtcNow >= imminentBreachTime && !await IsSlaBreach(ticket);
+        // Imminent if remaining time is less than or equal to buffer time
+        return remainingTime <= bufferTime;
     }
 
     public async Task<IEnumerable<Ticket>> GetImminentSlaBreachTickets()
@@ -81,8 +88,7 @@ public class SlaService : ISlaService
             .Include(t => t.CreatedBy)
             .Include(t => t.AssignedTo)
             .Where(t => t.Status != TicketStatus.Resolved && 
-                       t.Status != TicketStatus.Closed &&
-                       t.SlaTargetDate != null)
+                       t.Status != TicketStatus.Closed)
             .ToListAsync();
 
         var imminentBreachTickets = new List<Ticket>();

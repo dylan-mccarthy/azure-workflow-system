@@ -113,7 +113,9 @@ public class SlaServiceTests : IDisposable
         _context.SlaConfigurations.Add(slaConfig);
         await _context.SaveChangesAsync();
 
-        var createdAt = DateTime.UtcNow.AddHours(-5); // Created 5 hours ago
+        var createdAt = DateTime.UtcNow.AddMinutes(-330); // Created 330 minutes ago (5.5 hours)
+        // With 360 minute SLA, target will be 30 minutes from now
+        // 30 minutes remaining out of 360 = 8.3% remaining (< 10%)
         var ticket = new Ticket
         {
             Title = "Test Ticket",
@@ -126,7 +128,7 @@ public class SlaServiceTests : IDisposable
         // Calculate SLA first
         await _slaService.CalculateSlaTargetDate(ticket);
 
-        // Act - 10% of 6 hours = 36 minutes, so with 1 hour remaining, it should be imminent
+        // Act - 10% of 6 hours = 36 minutes, with 30 minutes remaining, it should be imminent
         var result = await _slaService.IsImminentSlaBreach(ticket, 0.1);
 
         // Assert
@@ -188,35 +190,33 @@ public class SlaServiceTests : IDisposable
         {
             Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
-            ResolutionTimeMinutes = 60,
+            ResolutionTimeMinutes = 60, // 1 hour
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
         _context.SlaConfigurations.Add(slaConfig);
 
-        // Ticket with imminent breach (50 minutes into 60 minute SLA)
+        // Ticket with imminent breach (55 minutes into 60 minute SLA = 5 minutes left = 8.3% remaining)
         var imminentTicket = new Ticket
         {
             Title = "Imminent Breach",
             Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             Status = TicketStatus.New,
-            CreatedAt = DateTime.UtcNow.AddMinutes(-50),
-            CreatedById = user.Id,
-            SlaTargetDate = DateTime.UtcNow.AddMinutes(10) // 10 minutes left
+            CreatedAt = DateTime.UtcNow.AddMinutes(-55), // 55 minutes ago
+            CreatedById = user.Id
         };
 
-        // Ticket with plenty of time left
+        // Ticket with plenty of time left (10 minutes into 60 minute SLA = 50 minutes left = 83% remaining)
         var safeTicket = new Ticket
         {
             Title = "Safe Ticket",
             Priority = TicketPriority.Emergency,
             Category = TicketCategory.Incident,
             Status = TicketStatus.New,
-            CreatedAt = DateTime.UtcNow.AddMinutes(-10),
-            CreatedById = user.Id,
-            SlaTargetDate = DateTime.UtcNow.AddMinutes(50) // 50 minutes left
+            CreatedAt = DateTime.UtcNow.AddMinutes(-10), // 10 minutes ago
+            CreatedById = user.Id
         };
 
         _context.Tickets.AddRange(imminentTicket, safeTicket);

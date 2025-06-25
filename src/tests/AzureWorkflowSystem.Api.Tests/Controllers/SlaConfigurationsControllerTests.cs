@@ -110,7 +110,7 @@ public class SlaConfigurationsControllerTests
         var controller = GetController(context);
         var createDto = new CreateSlaConfigurationDto
         {
-            Priority = TicketPriority.High,
+            Priority = TicketPriority.Low,
             Category = TicketCategory.Alert,
             ResponseTimeMinutes = 30,
             ResolutionTimeMinutes = 120,
